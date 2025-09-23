@@ -6,7 +6,7 @@ use App\Models\JenisIdentitas;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('pages.dashboard');
 });
 
 // Menampilkan halaman registrasi tamu
