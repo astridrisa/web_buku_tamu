@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class RoleModel extends Model
+{
+    use HasFactory;
+    protected $table = 'role';
+    protected $primaryKey = 'role_id';
+    protected $fillable = ['nama_role', 'created_at', 'updated_at'];
+
+    public function user(): HasMany
+    {
+        return $this->hasMany(UserModel::class, 'role_id', 'role_id');
+    }
+}
