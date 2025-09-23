@@ -18,9 +18,6 @@ return new class extends Migration {
             // Relasi ke tabel jenis_identitas
             $table->foreignId('jenis_identitas_id')->constrained('jenis_identitas');
 
-            // Relasi ke tabel role
-            $table->foreignId('role_id')->constrained('role');
-
             $table->enum('status', ['belum_checkin', 'checkin', 'approved', 'checkout'])->default('belum_checkin');
             $table->string('qr_code')->nullable();
             $table->timestamp('checkin_at')->nullable();
