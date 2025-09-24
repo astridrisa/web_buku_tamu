@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\JenisIdentitas;
+use App\Models\JenisIdentitasModel;
 
 class JenisIdentitasSeeder extends Seeder
 {
@@ -17,6 +17,6 @@ class JenisIdentitasSeeder extends Seeder
         ];
 
         foreach ($identitas as $data) {
-            JenisIdentitas::create($data);}
+            JenisIdentitasModel::create($data);}
 }
 }

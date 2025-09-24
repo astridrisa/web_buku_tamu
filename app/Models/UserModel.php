@@ -12,6 +12,8 @@ class UserModel extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+     protected $table = 'users';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +23,7 @@ class UserModel extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
     ];
 
     /**
@@ -45,4 +48,15 @@ class UserModel extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function role()
+    {
+        return $this->belongsTo(RoleModel::class, 'role_id', 'role_id');
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'name';
+    }
+
 }
