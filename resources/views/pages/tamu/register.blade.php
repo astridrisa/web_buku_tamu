@@ -270,10 +270,7 @@
     <!-- Login Buttons -->
     <div class="login-buttons">
         <a href="{{ route('login') }}"class="btn-login security" onclick="loginSatpam()">
-            <i class="fas fa-shield-alt me-1"></i>Login Satpam
-        </a>
-        <a href="{{ route('login') }}" class="btn-login employee" onclick="loginPegawai()">
-            <i class="fas fa-user-tie me-1"></i>Login Pegawai
+            <i class="fas fa-user-tie me-1"></i>Login
         </a>
     </div>
 
