@@ -36,12 +36,65 @@
             overflow: hidden;
         }
         
+        /* Login buttons styling */
+        .login-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .btn-login {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            color: #667eea;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-login.security {
+            border-color: rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+        
+        .btn-login.security:hover {
+            background: #28a745;
+            color: white;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-login.employee {
+            border-color: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+        
+        .btn-login.employee:hover {
+            background: #ffc107;
+            color: #212529;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+        
         .card-header {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             padding: 30px;
             text-align: center;
             border: none;
+            position: relative;
         }
         
         .card-header h2 {
@@ -196,9 +249,34 @@
         .loading.show {
             display: inline-block;
         }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .login-buttons {
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            
+            .btn-login {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Login Buttons -->
+    <div class="login-buttons">
+        <a href="#" class="btn-login security" onclick="loginSatpam()">
+            <i class="fas fa-shield-alt me-1"></i>Login Satpam
+        </a>
+        <a href="#" class="btn-login employee" onclick="loginPegawai()">
+            <i class="fas fa-user-tie me-1"></i>Login Pegawai
+        </a>
+    </div>
+
     <div class="registration-container">
         <div class="registration-card">
             <div class="card-header">
@@ -393,6 +471,17 @@
                 }
             });
         });
+        
+        // Login functions (untuk sementara menggunakan alert, nanti bisa dihubungkan ke halaman login)
+        function loginSatpam() {
+            alert('Login Satpam - Akan diarahkan ke halaman login satpam');
+            // Nanti bisa diganti dengan: window.location.href = '/satpam/login';
+        }
+        
+        function loginPegawai() {
+            alert('Login Pegawai - Akan diarahkan ke halaman login pegawai');
+            // Nanti bisa diganti dengan: window.location.href = '/pegawai/login';
+        }
     </script>
 </body>
 </html>

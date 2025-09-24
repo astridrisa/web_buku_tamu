@@ -6,11 +6,11 @@ use App\Models\JenisIdentitas;
 
 
 Route::get('/', function () {
-    return view('pages.dashboard');
+    return redirect()->route('tamu.index');
 });
 
 // Menampilkan halaman registrasi tamu
-Route::get('/tamu/register', [TamuController::class, 'index'])->name('tamu.index');
+Route::get('/register', [TamuController::class, 'index'])->name('tamu.index');
 
 // Menyimpan data tamu
-Route::post('/tamu/register', [TamuController::class, 'store'])->name('tamu.store');
+Route::post('/register', [TamuController::class, 'store'])->name('tamu.store');
