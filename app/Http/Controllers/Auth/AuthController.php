@@ -11,7 +11,7 @@ class AuthController extends Controller
     // Tampilkan form login
     public function showLoginForm()
     {
-        return view('pages.login'); // bikin view login.blade.php
+        return view('auth.login'); // bikin view login.blade.php
     }
 
     // Proses login
@@ -24,14 +24,15 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            
+            // Redirect LANGSUNG ke dashboard tanpa intended
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
             'name' => 'Username atau password salah.',
         ])->onlyInput('name');
     }
-
 
     // Logout
     public function logout(Request $request)

@@ -269,10 +269,10 @@
 <body>
     <!-- Login Buttons -->
     <div class="login-buttons">
-        <a href="#" class="btn-login security" onclick="loginSatpam()">
+        <a href="{{ route('login') }}"class="btn-login security" onclick="loginSatpam()">
             <i class="fas fa-shield-alt me-1"></i>Login Satpam
         </a>
-        <a href="#" class="btn-login employee" onclick="loginPegawai()">
+        <a href="{{ route('login') }}" class="btn-login employee" onclick="loginPegawai()">
             <i class="fas fa-user-tie me-1"></i>Login Pegawai
         </a>
     </div>
@@ -472,16 +472,16 @@
             });
         });
         
-        // Login functions (untuk sementara menggunakan alert, nanti bisa dihubungkan ke halaman login)
-        function loginSatpam() {
-            alert('Login Satpam - Akan diarahkan ke halaman login satpam');
-            // Nanti bisa diganti dengan: window.location.href = '/satpam/login';
-        }
+        // // Login functions (untuk sementara menggunakan alert, nanti bisa dihubungkan ke halaman login)
+        // function loginSatpam() {
+        //     alert('Login Satpam - Akan diarahkan ke halaman login satpam');
+        //     // Nanti bisa diganti dengan: window.location.href = '/satpam/login';
+        // }
         
-        function loginPegawai() {
-            alert('Login Pegawai - Akan diarahkan ke halaman login pegawai');
-            // Nanti bisa diganti dengan: window.location.href = '/pegawai/login';
-        }
+        // function loginPegawai() {
+        //     alert('Login Pegawai - Akan diarahkan ke halaman login pegawai');
+        //     // Nanti bisa diganti dengan: window.location.href = '/pegawai/login';
+        // }
     </script>
 </body>
 </html>
