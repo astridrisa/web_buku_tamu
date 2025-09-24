@@ -51,7 +51,7 @@ class UserModel extends Authenticatable
 
     public function role()
     {
-        return $this->belongsTo(RoleModel::class, 'role_id', 'role_id');
+        return $this->belongsTo(RoleModel::class, 'role_id', 'id');
     }
 
     public function getAuthIdentifierName()

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class AuthController extends Controller
 {
     // Tampilkan form login
@@ -17,22 +18,25 @@ class AuthController extends Controller
     // Proses login
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'name' => ['required', 'string'],
-            'password' => ['required'],
+        $request->validate([
+            'email' => 'required|string',  // bisa email / username
+            'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // cek apakah input berupa email atau username
+        $fieldType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+
+        // coba login
+        if (Auth::attempt([$fieldType => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            
-            // Redirect LANGSUNG ke dashboard tanpa intended
             return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
-            'name' => 'Username atau password salah.',
-        ])->onlyInput('name');
+            'login' => 'Email/Username atau password salah.',
+        ])->onlyInput('login');
     }
+
 
     // Logout
     public function logout(Request $request)

@@ -17,11 +17,11 @@ class DashboardController extends Controller
         $user = Auth::user();
         
         // Redirect based on user role
-        switch ($user->role) {
-            case 'security':
+        switch ($user->role_id) {
+            case 1:
                 return $this->securityDashboard();
                 
-            case 'pegawai':
+            case 2:
                 return $this->pegawaiDashboard();
                 
             default:
@@ -30,13 +30,14 @@ class DashboardController extends Controller
                 return redirect()->route('login')->with('error', 'Role tidak dikenali. Silakan hubungi administrator.');
         }
     }
+
     
     /**
      * Security Dashboard
      */
     private function securityDashboard()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->get();
         
@@ -68,17 +69,17 @@ class DashboardController extends Controller
      */
     private function pegawaiDashboard()
     {
-        $tamus = Tamu::where('status', 'checkin')
+        $tamus = TamuModel::where('status', 'checkin')
                      ->with(['jenisIdentitas', 'checkinBy'])
                      ->orderBy('checkin_at', 'desc')
                      ->get();
         
         $stats = [
             'pending_approval' => $tamus->count(),
-            'approved_today' => Tamu::whereDate('approved_at', today())
+            'approved_today' => TamuModel::whereDate('approved_at', today())
                                    ->where('approved_by', Auth::id())
                                    ->count(),
-            'total_approved' => Tamu::where('approved_by', Auth::id())->count(),
+            'total_approved' =>TamuModel::where('approved_by', Auth::id())->count(),
             'approval_rate' => $this->calculateApprovalRate(),
         ];
         
@@ -90,8 +91,8 @@ class DashboardController extends Controller
      */
     private function calculateApprovalRate()
     {
-        $totalTamus = Tamu::count();
-        $approvedByUser = Tamu::where('approved_by', Auth::id())->count();
+        $totalTamus = TamuModel::count();
+        $approvedByUser = TamuModel::where('approved_by', Auth::id())->count();
         
         if ($totalTamus == 0) {
             return 0;
@@ -121,7 +122,7 @@ class DashboardController extends Controller
      */
     private function getSecurityData()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->get();
         
@@ -150,8 +151,8 @@ class DashboardController extends Controller
      */
     private function getPegawaiData()
     {
-        $pendingCount = Tamu::where('status', 'checkin')->count();
-        $approvedToday = Tamu::whereDate('approved_at', today())
+        $pendingCount = TamuModel::where('status', 'checkin')->count();
+        $approvedToday = TamuModel::whereDate('approved_at', today())
                             ->where('approved_by', Auth::id())
                             ->count();
         
@@ -159,7 +160,7 @@ class DashboardController extends Controller
             'stats' => [
                 'pending_approval' => $pendingCount,
                 'approved_today' => $approvedToday,
-                'total_approved' => Tamu::where('approved_by', Auth::id())->count(),
+                'total_approved' => TamuModel::where('approved_by', Auth::id())->count(),
                 'approval_rate' => $this->calculateApprovalRate()
             ]
         ]);
@@ -172,12 +173,12 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->role === 'security') {
-            return redirect()->route('security.dashboard');
-        } elseif ($user->role === 'pegawai') {
+        if ($user->role_id === '1') {
+            return redirect()->route('dashboard');
+        } elseif ($user->role_id === '2') {
             return redirect()->route('pegawai.dashboard');
         }
         
-        return redirect()->route('login')->with('error', 'Role tidak dikenali.');
+        return redirect()->route('dashboard')->with('error', 'Role tidak dikenali.');
     }
 }
