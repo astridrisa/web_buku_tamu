@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tamu;
-use App\Models\Security
+use App\Models\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

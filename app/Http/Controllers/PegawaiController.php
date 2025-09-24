@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tamu;
-use App\Models\Pegawai
+use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
