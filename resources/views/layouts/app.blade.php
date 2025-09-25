@@ -9,6 +9,10 @@
   <link rel="stylesheet" href="{{ asset('assets/vendors/mdi/css/materialdesignicons.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/css/vertical-layout-light/style.css') }}">
+  <link href="css/material-icons.min.css" rel="stylesheet">
+
+  {{-- Styles tambahan dari child Blade --}}
+  @stack('styles')
 </head>
 <body>
   <div class="container-scroller">
@@ -34,7 +38,9 @@
   <script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
   <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
   <script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
-  {{-- <script src="{{ asset('assets/js/misc.js') }}"></script> --}}
   <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+
+  {{-- Scripts tambahan dari child Blade --}}
+  @stack('scripts')
 </body>
 </html>

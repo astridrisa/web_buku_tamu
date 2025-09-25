@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TamuController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SecurityController;
 use App\Models\JenisIdentitas;
 use App\Http\Controllers\Auth\AuthController;
 

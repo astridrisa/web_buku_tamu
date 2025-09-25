@@ -25,7 +25,7 @@
 
     <ul class="navbar-nav ms-auto">
       {{-- Dropdown kategori --}}
-      <li class="nav-item dropdown d-none d-lg-block">
+      {{-- <li class="nav-item dropdown d-none d-lg-block">
         <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#"
           data-bs-toggle="dropdown" aria-expanded="false"> Select Category </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
@@ -59,32 +59,36 @@
             </div>
           </a>
         </div>
-      </li>
+      </li> --}}
 
       {{-- Datepicker --}}
-      <li class="nav-item d-none d-lg-block">
+      {{-- <li class="nav-item d-none d-lg-block">
         <div id="datepicker-popup" class="input-group date datepicker navbar-date-picker">
           <span class="input-group-addon input-group-prepend border-right">
             <span class="icon-calendar input-group-text calendar-icon"></span>
           </span>
           <input type="text" class="form-control">
         </div>
-      </li>
+      </li> --}}
 
       {{-- Search --}}
-      <li class="nav-item">
+      {{-- <li class="nav-item">
         <form class="search-form" action="#">
           <i class="icon-search"></i>
           <input type="search" class="form-control" placeholder="Search Here" title="Search here">
         </form>
-      </li>
+      </li> --}}
 
       {{-- Notifikasi --}}
       <li class="nav-item dropdown">
-        <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-          <i class="icon-bell"></i>
-          <span class="count"></span>
+        <a class="nav-link position-relative" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
+          <i class="mdi mdi-bell-outline fs-3"></i>
+            <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">
+            3 
+            <span class="visually-hidden">unread messages</span>
+          </span>
         </a>
+
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
           aria-labelledby="notificationDropdown">
           <a class="dropdown-item py-3 border-bottom">

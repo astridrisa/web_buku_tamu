@@ -20,7 +20,7 @@ class TamuModel extends Model
         'email',
         'jumlah_rombongan',
         'jenis_identitas_id',
-        'role_id',
+        // 'role_id',
         'qr_code',
         'status',
         'approved_by',   // pastikan kolom ini ada di DB
@@ -54,4 +54,28 @@ class TamuModel extends Model
     {
         return $this->belongsTo(UserModel::class, 'checkout_by', 'id');
     }
+
+    // warna status   
+public function getStatusColorAttribute()
+{
+    return match($this->status) {
+        'belum_checkin' => 'warning',
+        'checkin' => 'success',
+        'approved' => 'primary',
+        'checkout' => 'secondary',
+        default => 'dark',
+    };
+}
+
+public function getStatusTextAttribute()
+{
+    return match($this->status) {
+        'belum_checkin' => 'Belum Checkin',
+        'checkin' => 'Checkin',
+        'approved' => 'Approved',
+        'checkout' => 'Checkout',
+        default => 'Unknown',
+    };
+}
+
 }

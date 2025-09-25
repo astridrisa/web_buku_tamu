@@ -9,6 +9,6 @@ class JenisIdentitasModel extends Model
 {
     use HasFactory;
 
-    protected $table = 'jenis_identitas'; // nama tabel
-    protected $fillable = ['nama'];       // field yang bisa diisi massal
+    protected $table = 'jenis_identitas';
+    protected $fillable = ['nama'];
 }

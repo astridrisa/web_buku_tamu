@@ -23,6 +23,7 @@ class TamuController extends Controller
     {
         try {
             // Debug: Log request data
+            
             Log::info('Request data:', $request->all());
             
             // Test database connection
@@ -52,6 +53,7 @@ class TamuController extends Controller
 
             $validated = $validator->validated();
             $validated['qr_code'] = Str::uuid();
+            $validated['status'] = 'belum_checkin';
             
             // Set default value jika tidak ada
             if (!isset($validated['jumlah_rombongan'])) {

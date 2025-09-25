@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Tamu;
 use App\Models\Security;
+use App\Models\TamuModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controller;
 
 class SecurityController extends Controller
 {
@@ -18,7 +20,7 @@ class SecurityController extends Controller
     // Halaman dashboard
     public function index()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->get();
         
@@ -35,7 +37,7 @@ class SecurityController extends Controller
     // List tamu dengan pagination
     public function list()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->paginate(10);
         
@@ -45,7 +47,7 @@ class SecurityController extends Controller
     // Detail tamu
     public function show($id)
     {
-        $tamu = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
         return view('security.show', compact('tamu'));
@@ -61,7 +63,7 @@ class SecurityController extends Controller
             'tujuan' => 'nullable|string|max:255',
         ]);
 
-        $tamu = Tamu::create($validated);
+        $tamu = TamuModel::create($validated);
 
         return response()->json([
             'success' => true, 
@@ -73,7 +75,7 @@ class SecurityController extends Controller
     // Edit tamu
     public function update(Request $request, $id)
     {
-        $tamu = Tamu::findOrFail($id);
+        $tamu = TamuModel::findOrFail($id);
 
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
@@ -95,7 +97,7 @@ class SecurityController extends Controller
     // Hapus tamu
     public function destroy($id)
     {
-        $tamu = Tamu::findOrFail($id);
+        $tamu = TamuModel::findOrFail($id);
         $tamu->delete();
 
         return response()->json([
@@ -107,7 +109,7 @@ class SecurityController extends Controller
     // Checkin tamu
     public function checkin(Request $request, $id)
     {
-        $tamu = Tamu::findOrFail($id);
+        $tamu = TamuModel::findOrFail($id);
         
         if ($tamu->status !== 'belum_checkin') {
             return response()->json(['success' => false, 'message' => 'Tamu sudah di-checkin']);
@@ -132,7 +134,7 @@ class SecurityController extends Controller
     // Checkout tamu
     public function checkout(Request $request, $id)
     {
-        $tamu = Tamu::findOrFail($id);
+        $tamu = TamuModel::findOrFail($id);
         
         if ($tamu->status !== 'approved') {
             return response()->json(['success' => false, 'message' => 'Tamu belum disetujui pegawai']);
