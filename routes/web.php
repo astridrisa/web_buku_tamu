@@ -29,3 +29,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+Route::prefix('security')->name('security.')->group(function () {
+    Route::get('/', [SecurityController::class, 'index'])->name('index');
+    Route::get('/list', [SecurityController::class, 'list'])->name('list');
+    Route::get('/create', [SecurityController::class, 'create'])->name('create'); // BARU
+    Route::post('/store', [SecurityController::class, 'store'])->name('store');
+    Route::get('/{id}', [SecurityController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [SecurityController::class, 'edit'])->name('edit'); // BARU
+    Route::put('/{id}', [SecurityController::class, 'update'])->name('update');
+    Route::delete('/{id}', [SecurityController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
+    Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
+});

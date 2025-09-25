@@ -61,7 +61,7 @@ class DashboardController extends Controller
                                      })->count(),
         ];
 
-        return view('security.dashboard', compact('tamus', 'stats', 'todayStats'));
+        return view('pages.security.dashboard', compact('tamus', 'stats', 'todayStats'));
     }
     
     /**
