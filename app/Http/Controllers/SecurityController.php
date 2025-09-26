@@ -14,15 +14,19 @@ class SecurityController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:security');
     }
 
     // Halaman dashboard
-    public function index()
+   public function index()
     {
+        if (Auth::user()->role_id != 3) {
+            // kalau bukan role security, balikin 403
+            abort(403, 'Unauthorized access');
+        }
+
         $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
         
         $stats = [
             'total' => $tamus->count(),
@@ -31,17 +35,18 @@ class SecurityController extends Controller
             'approved' => $tamus->where('status', 'approved')->count(),
         ];
 
-        return view('security.index', compact('tamus', 'stats'));
+        return view('pages.security.list', compact('tamus', 'stats'));
     }
+
 
     // List tamu dengan pagination
     public function list()
     {
         $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
-                     ->paginate(10);
+                     ->get();
         
-        return view('security.index', compact('tamus'));
+        return view('pages.security.list', compact('tamus'));
     }
 
     // Detail tamu
@@ -50,7 +55,7 @@ class SecurityController extends Controller
         $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
-        return view('security.show', compact('tamu'));
+        return view('pages.security.show', compact('tamu'));
     }
 
     // Tambah tamu
