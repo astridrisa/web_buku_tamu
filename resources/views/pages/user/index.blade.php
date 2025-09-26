@@ -182,7 +182,7 @@
                                 @endif
                             </td>
                             <td>
-                                <small>{{ $user->created_at->format('d/m/Y H:i') }}</small>
+                                <small>{{ optional($user->created_at)->format('d/m/Y H:i') }}</small>
                             </td>
                             <td>
                                 <div class="dropdown">
