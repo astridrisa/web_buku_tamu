@@ -36,10 +36,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
     // =================== ADMIN ROUTES (role_id = 1) ===================
-    Route::middleware('role:1')->group(function () {
+    Route::middleware('auth','role:1')->group(function () {
         // User Management - menggunakan UserController yang sudah ada
         Route::prefix('user')->name('admin.users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('/list', [UserController::class, 'list'])->name('list');
             Route::get('/create', [UserController::class, 'create'])->name('create');
             Route::post('/create', [UserController::class, 'store'])->name('store');
             Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
@@ -47,6 +48,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}', [UserController::class, 'show'])->name('show');
             Route::delete('/{id}', [UserController::class, 'delete'])->name('delete');
         });
+        
         
         // Tamu Management untuk Admin
         Route::prefix('admin/tamu')->name('admin.tamu.')->group(function () {
@@ -73,7 +75,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // =================== PEGAWAI ROUTES (role_id = 2) ===================
-    Route::middleware('role:2')->prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::middleware('auth','role:2')->prefix('pegawai')->name('pegawai.')->group(function () {
         
         Route::get('/dashboard', function() {
             return app(DashboardController::class)->pegawaiDashboard();
@@ -96,7 +98,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // =================== SECURITY ROUTES (role_id = 3) ===================
-    Route::middleware('role:3')->prefix('security')->name('security.')->group(function () {
+    Route::middleware('auth','role:3')->prefix('security')->name('security.')->group(function () {
         Route::get('/', [SecurityController::class, 'index'])->name('index');
         Route::get('/list', [SecurityController::class, 'list'])->name('list');
         Route::get('/create', [SecurityController::class, 'create'])->name('create');

@@ -30,8 +30,8 @@
           <div class="collapse {{ str_starts_with($currentRoute, 'admin.users') ? 'show' : '' }}" id="user-management">
             <ul class="nav flex-column sub-menu">
               <li class="nav-item">
-                <a class="nav-link {{ $currentRoute == 'admin.users.index' ? 'active' : '' }}" 
-                   href="{{ route('admin.users.index') }}">
+                <a class="nav-link {{ $currentRoute == 'admin.users.list' ? 'active' : '' }}" 
+                   href="{{ route('admin.users.list') }}">
                   <i class="mdi mdi-account-group"></i>
                   Daftar User
                 </a>

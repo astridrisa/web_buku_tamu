@@ -3,25 +3,21 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  mixed ...$roleIds
-     */
-    public function handle(Request $request, Closure $next, ...$roleIds): Response
+    public function handle($request, Closure $next, $roleId)
     {
-        if (Auth::check() && in_array(Auth::user()->role_id, $roleIds)) {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect()->route('login');
         }
 
-        abort(403, 'Unauthorized.');
+        // cek apakah role_id user sesuai
+        if (Auth::user()->role_id != $roleId) {
+            abort(403, 'Unauthorized.');
+        }
+
+        return $next($request);
     }
 }

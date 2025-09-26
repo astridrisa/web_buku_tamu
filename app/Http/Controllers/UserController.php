@@ -57,6 +57,34 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dibuat.');
     }
 
+        
+    public function list(Request $request)
+    {
+        $query = UserModel::with('role');
+
+        // Simple search
+        if ($request->has('q') && !empty($request->q)) {
+            $search = $request->q;
+            $query->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+        }
+
+        $users = $query->orderBy('name', 'asc')->paginate(15);
+
+        return view('pages.user.list', compact('users'));
+    }
+
+   
+    public function show($id)
+    {
+        $user = UserModel::with('role')->findOrFail($id);
+        
+        // Optional: Get user's activity log atau data terkait lainnya
+        // $activities = $user->activities()->latest()->take(5)->get();
+        
+        return view('pages.user.show', compact('user'));
+    }
+
     // Form edit user
     public function edit($id)
     {
