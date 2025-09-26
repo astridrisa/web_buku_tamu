@@ -10,7 +10,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h3 class="card-title">{{ $stats['admin'] }}</h3>
+                        {{-- <h3 class="card-title">{{ $stats['admin'] }}</h3> --}}
                         <p class="card-text">Admin</p>
                     </div>
                     <div class="align-self-center">
@@ -26,7 +26,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h3 class="card-title">{{ $stats['pegawai'] }}</h3>
+                        {{-- <h3 class="card-title">{{ $stats['pegawai'] }}</h3> --}}
                         <p class="card-text">Pegawai</p>
                     </div>
                     <div class="align-self-center">
@@ -42,7 +42,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h3 class="card-title">{{ $stats['security'] }}</h3>
+                        {{-- <h3 class="card-title">{{ $stats['security'] }}</h3> --}}
                         <p class="card-text">Security</p>
                     </div>
                     <div class="align-self-center">
@@ -99,12 +99,12 @@
                         <label for="role_filter" class="form-label">Filter Role</label>
                         <select class="form-select" id="role_filter" name="role_filter">
                             <option value="">Semua Role</option>
-                            @foreach($roles as $role)
+                            {{-- @foreach($roles as $role)
                                 <option value="{{ $role->id }}" 
                                         {{ request('role_filter') == $role->id ? 'selected' : '' }}>
                                     {{ ucfirst($role->name) }}
                                 </option>
-                            @endforeach
+                            @endforeach --}}
                         </select>
                     </div>
                 </div>

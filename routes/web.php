@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
     // =================== ADMIN ROUTES (role_id = 1) ===================
-    Route::middleware('auth','role:1')->group(function () {
+    Route::middleware('auth')->group(function () {
         // User Management - menggunakan UserController yang sudah ada
         Route::prefix('user')->name('admin.users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
@@ -98,7 +98,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // =================== SECURITY ROUTES (role_id = 3) ===================
-    Route::middleware('auth','role:3')->prefix('security')->name('security.')->group(function () {
+    Route::middleware('auth')->prefix('security')->name('security.')->group(function () {
         Route::get('/', [SecurityController::class, 'index'])->name('index');
         Route::get('/list', [SecurityController::class, 'list'])->name('list');
         Route::get('/create', [SecurityController::class, 'create'])->name('create');
