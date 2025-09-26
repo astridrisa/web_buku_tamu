@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Buku Tamu</title>
+
+    <link rel="icon" type="image/png" href="{{ url('img/logopjt2.png') }}">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
@@ -285,6 +287,14 @@
                     <i class="fas fa-user-plus me-1"></i>
                     Registrasi Tamu
                 </a>
+            </div>
+
+            <div class="text-center mt-4 mb-2">
+                Sistem Buku Tamu &copy; PJT 1. Made By Intern Polinema 2025
+                <div class="mt-2">
+                <a href="https://jasatirta1.co.id/">Perusahaan Umum Jasa Tirta 1</a>
+                {{-- <a href="#">Terms of Service</a> --}}
+                </div>
             </div>
         </div>
     </div>

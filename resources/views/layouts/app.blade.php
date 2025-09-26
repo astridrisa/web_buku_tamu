@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'Dashboard')</title>
 
+  <head>
+      <title>@yield('title') &mdash; PJT</title>
+      <link rel="icon" type="image/png" href="{{ url('img/logopjt2.png') }}">
+  </head>
+
+
   {{-- CSS --}}
   <link rel="stylesheet" href="{{ asset('assets/vendors/mdi/css/materialdesignicons.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">

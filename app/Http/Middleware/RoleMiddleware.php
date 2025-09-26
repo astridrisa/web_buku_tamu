@@ -12,11 +12,13 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  string  $roleId
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  mixed ...$roleIds
      */
-    public function handle(Request $request, Closure $next, $roleId): Response
+    public function handle(Request $request, Closure $next, ...$roleIds): Response
     {
-        if (Auth::check() && Auth::user()->role_id == $roleId) {
+        if (Auth::check() && in_array(Auth::user()->role_id, $roleIds)) {
             return $next($request);
         }
 

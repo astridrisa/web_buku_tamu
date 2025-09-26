@@ -1,4 +1,4 @@
-<nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
   <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
     <div class="me-3">
       <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-bs-toggle="minimize">
@@ -7,19 +7,22 @@
     </div>
     <div>
       <a class="navbar-brand brand-logo" href="{{ url('/') }}">
-        <img src="{{ asset('assets/images/logo.svg') }}" alt="logo" />
-      </a>
-      <a class="navbar-brand brand-logo-mini" href="{{ url('/') }}">
-        <img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo" />
-      </a>
+  <img src="{{ asset('img/logopjt.png') }}" alt="logo" style="height:70px; width:auto;" />
+</a>
+<a class="navbar-brand brand-logo-mini" href="{{ url('/') }}">
+  <img src="{{ asset('img/logopjt.png') }}" alt="logo-mini" style="height:50px; width:auto;" />
+</a>
+
     </div>
   </div>
 
   <div class="navbar-menu-wrapper d-flex align-items-top">
     <ul class="navbar-nav">
       <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-        <h1 class="welcome-text">Selamat Datang, <span class="text-black fw-bold">{{ Auth::user()->name }}</span></h1>
-        <h3 class="welcome-sub-text">Sistem Informasi Buku Tamu</h3>
+        <h1 class="welcome-text text-white">
+          Selamat Datang, <span class="fw-bold">{{ Auth::user()->name }}</span>
+        </h1>
+        <h3 class="welcome-sub-text text-white">Sistem Informasi Buku Tamu</h3>
       </li>
     </ul>
 
@@ -139,7 +142,8 @@
           <div class="dropdown-divider"></div>
           <a class="dropdown-item preview-item">
             <div class="preview-thumbnail">
-              <img src="{{ asset('assets/images/faces/face10.jpg') }}" alt="image" class="img-sm profile-pic">
+              <i class="mdi mdi-account-circle text-primary" style="font-size: 64px;"></i>
+              {{-- <img src="{{ asset('assets/images/faces/face10.jpg') }}" alt="image" class="img-sm profile-pic"> --}}
             </div>
             <div class="preview-item-content flex-grow py-2">
               <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner</p>
@@ -148,7 +152,8 @@
           </a>
           <a class="dropdown-item preview-item">
             <div class="preview-thumbnail">
-              <img src="{{ asset('assets/images/faces/face12.jpg') }}" alt="image" class="img-sm profile-pic">
+              <i class="mdi mdi-account-circle text-primary" style="font-size: 64px;"></i>
+              {{-- <img src="{{ asset('assets/images/faces/face12.jpg') }}" alt="image" class="img-sm profile-pic"> --}}
             </div>
             <div class="preview-item-content flex-grow py-2">
               <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey</p>
@@ -157,7 +162,8 @@
           </a>
           <a class="dropdown-item preview-item">
             <div class="preview-thumbnail">
-              <img src="{{ asset('assets/images/faces/face1.jpg') }}" alt="image" class="img-sm profile-pic">
+              <i class="mdi mdi-account-circle text-primary" style="font-size: 64px;"></i>
+              {{-- <img src="{{ asset('assets/images/faces/face1.jpg') }}" alt="image" class="img-sm profile-pic"> --}}
             </div>
             <div class="preview-item-content flex-grow py-2">
               <p class="preview-subject ellipsis font-weight-medium text-dark">Travis Jenkins</p>
@@ -168,27 +174,32 @@
       </li>
 
       {{-- User dropdown --}}
-      <li class="nav-item dropdown d-none d-lg-block user-dropdown">
-        <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-          <img class="img-xs rounded-circle" src="{{ asset('assets/images/faces/face8.jpg') }}" alt="Profile image">
-        </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
-          <div class="dropdown-header text-center">
-            <img class="img-md rounded-circle" src="{{ asset('assets/images/faces/face8.jpg') }}" alt="Profile image">
-            <p class="mb-1 mt-3 font-weight-semibold">Allen Moreno</p>
-            <p class="fw-light text-muted mb-0">allenmoreno@gmail.com</p>
-          </div>
-          <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My
-            Profile <span class="badge badge-pill badge-danger">1</span></a>
-          <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i>
-            Messages</a>
-          <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i>
-            Activity</a>
-          <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i>
-            FAQ</a>
-          <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+     <li class="nav-item dropdown d-none d-lg-block user-dropdown">
+      <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="mdi mdi-account-circle text-white" style="font-size: 45px;"></i>
+        {{-- <img class="img-xs rounded-circle" src="{{ asset('assets/images/faces/face8.jpg') }}" alt="Profile image"> --}}
+      </a>
+      <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
+        <div class="dropdown-header text-center">
+          <i class="mdi mdi-account-circle text-primary" style="font-size: 64px;"></i>
+          {{-- <img class="img-md rounded-circle" src="{{ asset('assets/images/faces/face8.jpg') }}" alt="Profile image"> --}}
+          <p class="mb-1 mt-3 font-weight-semibold">{{ Auth::user()->name }}</p>
+          <p class="fw-light text-muted mb-0">{{ Auth::user()->email }}</p>
         </div>
-      </li>
+        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
+        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages</a>
+        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
+        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i> FAQ</a>
+
+        <!-- Logout -->
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button type="submit" class="dropdown-item">
+            <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> Sign Out
+          </button>
+        </form>
+      </div>
+    </li>
     </ul>
 
     {{-- Toggle offcanvas menu (mobile) --}}

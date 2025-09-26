@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TamuModel;
 use App\Models\UserModel;
-
+use App\Models\RoleModel;
 class DashboardController extends Controller
 {
     /**
@@ -19,16 +19,41 @@ class DashboardController extends Controller
         // Redirect based on user role
         switch ($user->role_id) {
             case 1:
-                return $this->securityDashboard();
-                
+                return $this->adminDashboard();
+
             case 2:
                 return $this->pegawaiDashboard();
+
+            case 3:
+                return $this->securityDashboard();
                 
             default:
                 // If role is not recognized, logout and redirect to login
                 Auth::logout();
                 return redirect()->route('login')->with('error', 'Role tidak dikenali. Silakan hubungi administrator.');
         }
+    }
+
+        private function adminDashboard()
+    {
+        // Get comprehensive statistics
+        $stats = [
+            'total_users' => UserModel::count(),
+            'total_tamu' => TamuModel::count(),
+            'total_tamu_today' => TamuModel::whereDate('created_at', today())->count(),
+            'total_pending_tamu' => TamuModel::where('status', 'belum_checkin')->count(),
+        ];
+
+        // Get recent data
+        $recentUsers = UserModel::with('role')->latest()->limit(5)->get();
+        $recentTamu = TamuModel::with('jenisIdentitas')->latest()->limit(5)->get();
+        
+        // Get tamu data with additional info for admin view
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+                     ->orderBy('created_at', 'desc')
+                     ->paginate(10);
+
+        return view('pages.user.dashboard', compact('stats', 'recentUsers', 'recentTamu', 'tamus'));
     }
 
     
@@ -108,13 +133,43 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->role === 'security') {
-            return $this->getSecurityData();
-        } elseif ($user->role === 'pegawai') {
-            return $this->getPegawaiData();
+        switch ($user->role_id) {
+            case 1:
+                return $this->getAdminData();
+            case 2:
+                return $this->getSecurityData();
+            case 3:
+                return $this->getPegawaiData();
+            default:
+                return response()->json(['error' => 'Unauthorized'], 403);
         }
-        
-        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+
+       /**
+     * Get admin dashboard data
+     */
+    private function getAdminData()
+    {
+        return response()->json([
+            'stats' => [
+                'total_users' => UserModel::count(),
+                'total_tamu' => TamuModel::count(),
+                'total_tamu_today' => TamuModel::whereDate('created_at', today())->count(),
+                'total_pending_tamu' => TamuModel::where('status', 'belum_checkin')->count(),
+            ],
+            'recent_activities' => TamuModel::with('jenisIdentitas')
+                                          ->latest()
+                                          ->limit(5)
+                                          ->get()
+                                          ->map(function($tamu) {
+                                              return [
+                                                  'id' => $tamu->id,
+                                                  'nama' => $tamu->nama,
+                                                  'status' => $tamu->status,
+                                                  'created_at' => $tamu->created_at->format('H:i')
+                                              ];
+                                          })
+        ]);
     }
     
     /**
@@ -173,12 +228,15 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->role_id === '1') {
-            return redirect()->route('dashboard');
-        } elseif ($user->role_id === '2') {
-            return redirect()->route('pegawai.dashboard');
+        switch ($user->role_id) {
+            case 1:
+                return redirect()->route('admin.dashboard');
+            case 2:
+                return redirect()->route('security.dashboard');
+            case 3:
+                return redirect()->route('pegawai.dashboard');
+            default:
+                return redirect()->route('dashboard')->with('error', 'Role tidak dikenali.');
         }
-        
-        return redirect()->route('dashboard')->with('error', 'Role tidak dikenali.');
     }
 }
