@@ -75,7 +75,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // =================== PEGAWAI ROUTES (role_id = 2) ===================
-    Route::middleware('auth','role:2')->prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::middleware('auth')->prefix('pegawai')->name('pegawai.')->group(function () {
         
         Route::get('/dashboard', function() {
             return app(DashboardController::class)->pegawaiDashboard();
