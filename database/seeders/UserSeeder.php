@@ -13,18 +13,30 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+
+
+        // Satpam
         UserModel::create([
-            'name' => 'security1',                // username
-            'email' => 'security1@gmail.com',   // email dummy
-            'password' => Hash::make('12345'),   // password hashed
-            'role_id' => 1,                       // sesuaikan ID role (misal 2 = security)
+            'name' => 'satpam1',
+            'email' => 'satpam1@gmail.com',
+            'password' => Hash::make('12345'),
+            'role_id' => 2,
         ]);
 
-        // UserModel::create([
-        //     'name' => 'admin1',
-        //     'email' => 'admin1@example.com',
-        //     'password' => Hash::make('admin123'),
-        //     'role_id' => 1, // misal 1 = admin
-        // ]);
+        UserModel::create([
+            'name' => 'satpam2',
+            'email' => 'satpam2@gmail.com',
+            'password' => Hash::make('12345'),
+            'role_id' => 2,
+        ]);
+
+        // Admin
+        UserModel::create([
+            'name' => 'admin1',
+            'email' => 'admin1@gmail.com'   ,
+            'password' => Hash::make('admin123'),               
+            'role_id' => 1,
+        ]);
+
     }
 }

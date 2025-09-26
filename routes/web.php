@@ -110,4 +110,5 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
     });
+
 });
