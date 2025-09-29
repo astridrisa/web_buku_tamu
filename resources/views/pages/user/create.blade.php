@@ -44,7 +44,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <i class="mdi mdi-account"></i>
+                                    <i class="pmdi mdi-account"></i>
                                 </span>
                                 <input type="text" 
                                        class="form-control @error('name') is-invalid @enderror" 

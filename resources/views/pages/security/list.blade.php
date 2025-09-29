@@ -3,16 +3,7 @@
 @section('title', 'List Tamu')
 
 @section('content')
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2"><i class="mdi mdi-view-list-tamu me-2"></i>List Tamu</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
-                    <i class="mdi mdi-refresh"></i> Refresh
-                </button>
-            </div>
-        </div>
-    </div>
+
 
 
     @push('styles')
@@ -21,20 +12,37 @@
     @endpush
 
     <!-- Recent Guests Table -->
-    <div class="card shadow mb-4">
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">
+                        <i class="mdi mdi-account-multiple text-primary me-2"></i>
+                        Daftar Tamu
+                    </h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                        <i class="mdi mdi-plus me-1"></i>
+                        Tambah Tamu
+                    </a>
+                </div>
+            </div>
+            
+        </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped" id="recentGuestsTable">
-                    <thead>
+                <table class="table table-striped table-hover align-middle" id="recentGuestsTable">
+                    <thead class="table-dark" style="background-color: #2c3e50;">
                         <tr>
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>Tujuan</th>
-                            <th>Identitas</th>
-                            <th>Status</th>
-                            <th>Waktu Daftar</th>
-                            <th>Aksi</th>
+                            <th width="5%">No</th>
+                            <th width="20%">Nama</th>
+                            <th width="20%">Email</th>
+                            <th width="12%">Tujuan</th>
+                            <th width="10%">Identitas</th>
+                            <th width="13%">Status</th>
+                            <th width="13%">Waktu Daftar</th>
+                            <th width="10%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,20 +110,84 @@
                 // Inisialisasi DataTable dengan responsive
                 $('#recentGuestsTable').DataTable({
                     pageLength: 10,
-                    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                    order: [[6, 'desc']], // urut berdasarkan waktu daftar
+                    order: [[6, 'desc']],
                     responsive: true,
-                    columnDefs: [
-                        { orderable: false, targets: 0 } // kolom nomor tidak bisa diurutkan
+                    dom: '<"d-flex justify-content-between align-items-end mb-3 flex-wrap"<"d-flex gap-3"f><"d-flex gap-2"B>>rtip',
+                    buttons: [
+                        {
+                            text: '<i class="mdi mdi-filter me-1"></i> Filter',
+                            className: 'btn btn-primary btn-sm',
+                            action: function () {
+                                $('#statusFilter').trigger('change');
+                            }
+                        },
+                        {
+                            text: '<i class="mdi mdi-refresh me-1"></i> Reset',
+                            className: 'btn btn-outline-secondary btn-sm',
+                            action: function (e, dt) {
+                                dt.search('').columns().search('').draw();
+                                $('#statusFilter').val('');
+                            }
+                        }
                     ],
-                    rowCallback: function (row, data, index) {
-                        var table = $('#recentGuestsTable').DataTable();
-                        var pageInfo = table.page.info();
-                        $('td:eq(0)', row).html(pageInfo.start + index + 1);
+                    columnDefs: [
+                        {
+                            targets: 0,          // kolom pertama (No)
+                            orderable: false,    // supaya nggak bisa di-sort
+                            searchable: false,   // supaya nggak ikut search
+                            render: function (data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            }
+                        }
+                    ],
+                    initComplete: function () {
+                        var api = this.api();
+
+                        // === Styling search bawaan ===
+                        var $search = $('#recentGuestsTable_filter input')
+                            .attr('placeholder', '...')
+                            .addClass('form-control');
+                        $('#recentGuestsTable_filter label').contents().filter(function () {
+                            return this.nodeType === 3;
+                        }).remove(); // hapus label "Search:"
+
+                        $('#recentGuestsTable_filter').addClass('form-group mb-0 me-3');
+                        $('#recentGuestsTable_filter').prepend('<label class="form-label d-block"><i class="mdi mdi-account-search"></i> Cari Tamu</label>');
+
+                        $search.wrap('<div class="input-group"></div>');
+                        $search.after('<button class="btn btn-outline-primary" type="button"><i class="mdi mdi-magnify"></i></button>');
+
+                        // === Tambah filter status + refresh sebaris ===
+                        var filterHtml = $(
+                            '<div class="d-flex align-items-end mb-3">' +
+                            '  <div class="form-group mb-0 me-4">' +
+                            '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
+                            '    <select id="statusFilter" class="form-select form-select-sm">' +
+                            '      <option value="">Semua Status</option>' +
+                            '    </select>' +
+                            '  </div>' +
+                            '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
+                            '    <i class="mdi mdi-refresh"></i> Refresh' +
+                            '  </button>' +
+                            '</div>'
+                        );
+
+                        $('#recentGuestsTable_filter').after(filterHtml);
+
+                        // isi dropdown otomatis dari kolom status (index 5)
+                        api.column(5).data().unique().sort().each(function (d) {
+                            $('#statusFilter').append('<option value="' + d + '">' + d + '</option>');
+                        });
+
+                        // event filter status
+                        $('#statusFilter').on('change', function () {
+                            var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                            api.column(5).search(val ? '^' + val + '$' : '', true, false).draw();
+                        });
                     },
+
                     language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ data per halaman",
+                        search: "",
                         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
                         infoEmpty: "Tidak ada data tersedia",
                         zeroRecords: "Data tidak ditemukan",
@@ -129,20 +201,25 @@
                 });
 
 
+
+
                 // Check-in dan Check-out
-                $('.checkin-btn').click(function () {
+                // Check-in
+                $(document).on('click', '.checkin-btn', function () {
                     const tamuId = $(this).data('id');
                     const tamuName = $(this).data('name');
                     const button = $(this);
+
                     if (confirm(`Apakah Anda yakin akan check-in tamu ${tamuName}?`)) {
                         button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>');
+
                         $.ajax({
                             url: `/security/${tamuId}/checkin`,
                             method: 'POST',
                             data: {
                                 _token: $('meta[name="csrf-token"]').attr('content')
                             },
-                                    success: function (response) {
+                            success: function (response) {
                                 if (response.success) {
                                     showAlert('success', response.message);
                                     showQrCode(response.qr_code, tamuName);
@@ -154,13 +231,15 @@
                                     button.prop('disabled', false).html('<i class="mdi mdi-login"></i>');
                                 }
                             },
-                            error: function () {
+                            error: function (xhr) {
+                                console.log(xhr.responseText); // debug server
                                 showAlert('danger', 'Terjadi kesalahan saat check-in');
                                 button.prop('disabled', false).html('<i class="mdi mdi-login"></i>');
                             }
                         });
                     }
                 });
+
 
                 $('.checkout-btn').click(function () {
                     const tamuId = $(this).data('id');
@@ -191,10 +270,10 @@
                 // Fungsi alert sederhana
                 function showAlert(type, message) {
                     const alertHtml = `
-                                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                                        ${message}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>`;
+                                                                                                                                            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                                                                                                                                ${message}
+                                                                                                                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                                                                                                            </div>`;
                     $('main').prepend(alertHtml);
                     setTimeout(() => $('.alert').fadeOut(), 5000);
                 }
@@ -202,19 +281,43 @@
                 // Fungsi QR Code sederhana
                 function showQrCode(qrUrl, tamuName) {
                     const qrContent = `
-                                    <div id="printArea">
-                                        <h5>${tamuName}</h5>
-                                        <div class="mb-3">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                                                 alt="QR Code" class="img-fluid">
-                                        </div>
-                                        <p class="small">Tunjukkan QR Code ini ke pegawai</p>
-                                        <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
-                                    </div>`;
+                                                                                                                                            <div id="printArea">
+                                                                                                                                                <h5>${tamuName}</h5>
+                                                                                                                                                <div class="mb-3">
+                                                                                                                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+                                                                                                                                                         alt="QR Code" class="img-fluid">
+                                                                                                                                                </div>
+                                                                                                                                                <p class="small">Tunjukkan QR Code ini ke pegawai</p>
+                                                                                                                                                <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
+                                                                                                                                            </div>`;
                     $('#qrContent').html(qrContent);
                     $('#qrModal').modal('show');
                 }
             });
         </script>
+
+        <style>
+            .table th {
+                border-top: none;
+                font-weight: 600;
+                background-color: #2c3e50;
+                color: white;
+            }
+
+            /* Samain ukuran tombol search dengan tinggi input */
+            .dataTables_filter .input-group .btn {
+                padding: 0.375rem 0.5rem;
+                /* lebih kecil */
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            /* Iconnya biar pas */
+            .dataTables_filter .input-group .btn i {
+                font-size: 1rem;
+                /* default text size */
+                line-height: 1;
+            }
+        </style>
     @endpush
 @endsection

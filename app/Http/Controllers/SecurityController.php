@@ -114,6 +114,10 @@ class SecurityController extends Controller
     // Checkin tamu
     public function checkin(Request $request, $id)
     {
+        // Debug Auth
+         \Log::info('Auth ID: ' . Auth::id());
+        \Log::info('Auth user: ', (array) Auth::user());
+
         $tamu = TamuModel::findOrFail($id);
         
         if ($tamu->status !== 'belum_checkin') {
@@ -123,7 +127,7 @@ class SecurityController extends Controller
         $tamu->update([
             'status' => 'checkin',
             'checkin_at' => now(),
-            'checkin_by' => Auth::id()
+            'checkin_by' =>  (int) Auth::user()->id
         ]);
 
         // Generate QR Code

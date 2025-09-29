@@ -116,7 +116,7 @@
                 'role_id'  => $request->role_id,
             ]);
 
-            return redirect()->route('users.index')->with('success', 'User berhasil dibuat.');
+            return redirect()->route('admin.users.index')->with('success', 'User berhasil dibuat.');
         }
 
         public function list(Request $request)
