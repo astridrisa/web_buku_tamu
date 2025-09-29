@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('page-title', 'Tambah User Baru')
-@section('page-description', 'Tambahkan pengguna baru ke sistem')
+@section('page-title', 'Edit User')
+@section('page-description', 'Perbarui informasi pengguna')
 
 @section('content')
 <div class="row">
     <div class="col-md-8 offset-md-2">
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-warning text-dark">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="mdi mdi-account-plus me-2"></i>
-                        Form Tambah User
+                        <i class="mdi mdi-account-edit me-2"></i>
+                        Form Edit User
                     </h5>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-light btn-sm">
                         <i class="mdi mdi-arrow-left me-1"></i>
@@ -33,8 +33,9 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.users.store') }}" method="POST">
+                <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                     @csrf
+                    @method('PUT')
 
                     <div class="row">
                         <!-- Nama Lengkap -->
@@ -50,7 +51,7 @@
                                        class="form-control @error('name') is-invalid @enderror" 
                                        id="name" 
                                        name="name" 
-                                       value="{{ old('name') }}" 
+                                       value="{{ old('name', $user->name) }}" 
                                        placeholder="Masukkan nama lengkap"
                                        required>
                             </div>
@@ -72,7 +73,7 @@
                                        class="form-control @error('email') is-invalid @enderror" 
                                        id="email" 
                                        name="email" 
-                                       value="{{ old('email') }}" 
+                                       value="{{ old('email', $user->email) }}" 
                                        placeholder="contoh@email.com"
                                        required>
                             </div>
@@ -94,7 +95,7 @@
                                        class="form-control @error('phone') is-invalid @enderror" 
                                        id="phone" 
                                        name="phone" 
-                                       value="{{ old('phone') }}" 
+                                       value="{{ old('phone', $user->phone) }}" 
                                        placeholder="08xxxxxxxxxx">
                             </div>
                             @error('phone')
@@ -113,12 +114,10 @@
                                     required>
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $role)
-                                    @if($role->id != 1)
-                                        <option value="{{ $role->id }}" 
-                                                {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                            {{ ucfirst($role->nama_role) }}
-                                        </option>
-                                    @endif
+                                    <option value="{{ $role->id }}" 
+                                            {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
+                                        {{ ucfirst($role->nama_role) }}
+                                    </option>
                                 @endforeach
                             </select>
                             @error('role_id')
@@ -135,10 +134,12 @@
                                     id="status" 
                                     name="status" 
                                     required>
-                                <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>
+                                <option value="active" 
+                                        {{ old('status', $user->status ?? 'active') == 'active' ? 'selected' : '' }}>
                                     Aktif
                                 </option>
-                                <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
+                                <option value="inactive" 
+                                        {{ old('status', $user->status ?? 'active') == 'inactive' ? 'selected' : '' }}>
                                     Nonaktif
                                 </option>
                             </select>
@@ -146,11 +147,21 @@
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
+                    </div>
 
-                        <!-- Password -->
+                    <hr class="my-4">
+
+                    <!-- Password Section -->
+                    <div class="alert alert-info" role="alert">
+                        <i class="mdi mdi-information me-2"></i>
+                        <strong>Catatan:</strong> Kosongkan password jika tidak ingin mengubahnya
+                    </div>
+
+                    <div class="row">
+                        <!-- Password Baru -->
                         <div class="col-md-6 mb-3">
                             <label for="password" class="form-label">
-                                Password <span class="text-danger">*</span>
+                                Password Baru
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -160,8 +171,7 @@
                                        class="form-control @error('password') is-invalid @enderror" 
                                        id="password" 
                                        name="password" 
-                                       placeholder="Minimal 5 karakter"
-                                       required>
+                                       placeholder="Minimal 5 karakter">
                                 <button class="btn btn-outline-secondary" 
                                         type="button" 
                                         onclick="togglePassword('password')">
@@ -176,7 +186,7 @@
                         <!-- Konfirmasi Password -->
                         <div class="col-md-6 mb-3">
                             <label for="password_confirmation" class="form-label">
-                                Konfirmasi Password <span class="text-danger">*</span>
+                                Konfirmasi Password
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -186,8 +196,7 @@
                                        class="form-control" 
                                        id="password_confirmation" 
                                        name="password_confirmation" 
-                                       placeholder="Ulangi password"
-                                       required>
+                                       placeholder="Ulangi password baru">
                                 <button class="btn btn-outline-secondary" 
                                         type="button" 
                                         onclick="togglePassword('password_confirmation')">
@@ -200,32 +209,36 @@
                     <hr class="my-4">
 
                     <div class="d-flex justify-content-between">
-                        <a href="{{ route('admin.users.list') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
                             <i class="mdi mdi-close me-1"></i>
                             Batal
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-warning">
                             <i class="mdi mdi-content-save me-1"></i>
-                            Simpan User
+                            Update User
                         </button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Info Card -->
+        <!-- User Info -->
         <div class="card mt-4">
             <div class="card-body">
                 <h6 class="card-title">
-                    <i class="mdi mdi-information text-info me-2"></i>
-                    Informasi
+                    <i class="mdi mdi-clock-outline text-muted me-2"></i>
+                    Informasi Akun
                 </h6>
-                <ul class="mb-0">
-                    <li>Pastikan email yang digunakan valid dan belum terdaftar</li>
-                    <li>Password minimal 5 karakter</li>
-                    <li>Role akan menentukan akses pengguna di sistem</li>
-                    <li>Status dapat diubah kapan saja setelah user dibuat</li>
-                </ul>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Terdaftar pada:</small>
+                        <p class="mb-0">{{ $user->created_at->format('d F Y, H:i') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Terakhir diupdate:</small>
+                        <p class="mb-0">{{ $user->updated_at->format('d F Y, H:i') }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

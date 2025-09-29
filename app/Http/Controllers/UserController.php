@@ -26,17 +26,77 @@
         }
 
         // Tampilkan semua user
-        public function index()
+        // public function index()
+        // {
+        //     $users = UserModel::with('role')
+        //         ->when(request('search'), function($query) {
+        //             $query->where('name', 'like', '%' . request('search') . '%')
+        //                 ->orWhere('email', 'like', '%' . request('search') . '%');
+        //         })
+        //         ->when(request('role_filter'), function($query) {
+        //             $query->where('role_id', request('role_filter'));
+        //         })
+        //         ->orderBy('created_at', 'desc')
+        //         ->paginate(10); // Changed from get() to paginate()
+            
+        //     // Get role statistics for the cards
+        //     $stats = [
+        //         'admin' => UserModel::where('role_id', 1)->count(),
+        //         'pegawai' => UserModel::where('role_id', 2)->count(),
+        //         'security' => UserModel::where('role_id', 3)->count(),
+        //     ];
+            
+        //     // Get all roles for filter dropdown
+        //     $roles = RoleModel::all(); // Or RoleModel::all() depending on your model name
+            
+        //     return view('pages.user.index', compact('users', 'stats', 'roles'));
+        // }
+
+        public function index(Request $request)
         {
-            $users = UserModel::with('role')->get();
-            return view('pages.user.index', compact('users'));
+            $query = UserModel::with('role');
+
+            // Search functionality
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Role filter
+            if ($request->has('role_filter') && !empty($request->role_filter)) {
+                $query->where('role_id', $request->role_filter);
+            }
+
+            // Status filter
+            if ($request->has('status_filter') && !empty($request->status_filter)) {
+                $query->where('status', $request->status_filter);
+            }
+
+            // Get stats for dashboard cards
+            $stats = [
+                'admin' => UserModel::where('role_id', 1)->count(),
+                'pegawai' => UserModel::where('role_id', 2)->count(),
+                'security' => UserModel::where('role_id', 3)->count(),
+                'total' => UserModel::count(),
+            ];
+
+            // Get roles for filter dropdown
+            $roles = RoleModel::all();
+
+            // Paginate results
+            $users = $query->orderBy('name', 'asc')->paginate(15);
+
+            return view('pages.user.index', compact('users', 'stats', 'roles'));
         }
 
         // Form create user (hanya admin)
         public function create()
         {
             $roles = RoleModel::all(); // biar admin bisa pilih role
-            return view('page.user.create', compact('roles'));
+            return view('pages.user.create', compact('roles'));
         }
 
         // Simpan user baru (hanya admin)
@@ -59,21 +119,38 @@
             return redirect()->route('users.index')->with('success', 'User berhasil dibuat.');
         }
 
-            
         public function list(Request $request)
         {
             $query = UserModel::with('role');
 
-            // Simple search
-            if ($request->has('q') && !empty($request->q)) {
-                $search = $request->q;
-                $query->where('name', 'like', '%' . $search . '%')
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            }
+
+            if ($request->has('role_filter') && !empty($request->role_filter)) {
+                $query->where('role_id', $request->role_filter);
+            }
+
+            if ($request->has('status_filter') && !empty($request->status_filter)) {
+                $query->where('status', $request->status_filter);
             }
 
             $users = $query->orderBy('name', 'asc')->paginate(15);
 
-            return view('pages.user.index', compact('users'));
+            $stats = [
+                'admin' => UserModel::where('role_id', 1)->count(),
+                'pegawai' => UserModel::where('role_id', 2)->count(),
+                'security' => UserModel::where('role_id', 3)->count(),
+                'total' => UserModel::count(),
+            ];
+
+            $roles = RoleModel::all(); // 🔥 ini wajib ada
+
+            return view('pages.user.index', compact('users', 'stats', 'roles'));
         }
 
     
@@ -92,7 +169,7 @@
         {
             $user = UserModel::findOrFail($id);
             $roles = RoleModel::all();
-            return view('page.user.edit', compact('user', 'roles'));
+            return view('pages.user.edit', compact('user', 'roles'));
         }
 
         // Update user
@@ -113,15 +190,15 @@
 
             $user->update($data);
 
-            return redirect()->route('pages.user.index')->with('success', 'User berhasil diperbarui.');
+            return redirect()->route('admin.users.list')->with('success', 'User berhasil diperbarui.');
         }
 
         // Hapus user
-        public function destroy($id)
+        public function delete($id)
         {
             $user = UserModel::findOrFail($id);
             $user->delete();
 
-            return redirect()->route('pages.user.index')->with('success', 'User berhasil dihapus.');
+            return redirect()->route('admin.users.list')->with('success', 'User berhasil dihapus.');
         }
     }

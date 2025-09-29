@@ -17,7 +17,7 @@ class SecurityController extends Controller
     }
 
     // Halaman dashboard
-   public function index()
+    public function index()
     {
         if (Auth::user()->role_id != 3) {
             // kalau bukan role security, balikin 403

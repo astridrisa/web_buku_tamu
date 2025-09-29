@@ -20,7 +20,7 @@
     <ul class="navbar-nav">
       <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
         <h1 class="welcome-text text-white">
-          Selamat Datang, <span class="fw-bold">{{ Auth::user()->name }}</span>
+          Selamat Datang, <span class="fw-bold">{{ Auth::user()->name }}!</span>
         </h1>
         <h3 class="welcome-sub-text text-white">Sistem Informasi Buku Tamu</h3>
       </li>

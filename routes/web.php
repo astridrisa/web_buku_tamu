@@ -42,7 +42,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
             Route::get('/list', [UserController::class, 'list'])->name('list');
             Route::get('/create', [UserController::class, 'create'])->name('create');
-            Route::post('/create', [UserController::class, 'store'])->name('store');
+            Route::post('/store', [UserController::class, 'store'])->name('store');
             Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
             Route::put('/{id}', [UserController::class, 'update'])->name('update');
             Route::get('/{id}', [UserController::class, 'show'])->name('show');
@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('admin/tamu')->name('admin.tamu.')->group(function () {
             Route::get('/', function() {
                 $tamus = \App\Models\TamuModel::with('jenisIdentitas')->paginate(15);
-                return view('pages.admin.tamu.index', compact('tamus'));
+                return view('pages.user.index', compact('tamus'));
             })->name('index');
             
             Route::post('/{tamu}/approve', function(\App\Models\TamuModel $tamu) {

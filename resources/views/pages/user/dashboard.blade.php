@@ -7,8 +7,9 @@
     <div class="col-md-12 grid-margin">
         <div class="row">
             <div class="col-12 col-xl-8 mb-4 mb-xl-0">
-                <h3 class="font-weight-bold">Welcome, {{ auth()->user()->name }}!</h3>
-                <h6 class="font-weight-normal mb-0">Admin Dashboard - {{ auth()->user()->role->role_name ?? 'Administrator' }}</h6>
+                <h1 class="h2"><i class="mdi mdi-view-dashboard me-2"></i>Dashboard Admin</h1>
+                {{-- <h3 class="font-weight-bold">Welcome, {{ auth()->user()->name }}!</h3>
+                <h6 class="font-weight-normal mb-0">Admin Dashboard - {{ auth()->user()->role->role_name ?? 'Administrator' }}</h6> --}}
             </div>
             <div class="col-12 col-xl-4">
                 <div class="justify-content-end d-flex">
@@ -213,11 +214,11 @@
                                         <i class="mdi mdi-account-multiple"></i> Manage Tamu
                                     </a>
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                {{-- <div class="col-md-3 mb-3">
                                     <a href="{{ route('security.index') }}" class="btn btn-warning btn-lg btn-block">
                                         <i class="mdi mdi-shield-account"></i> Security Panel
                                     </a>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>
