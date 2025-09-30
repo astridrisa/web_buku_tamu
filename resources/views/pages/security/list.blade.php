@@ -4,8 +4,6 @@
 
 @section('content')
 
-
-
     @push('styles')
         <!-- DataTables Bootstrap 5 CSS -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
@@ -22,13 +20,12 @@
                     </h5>
                 </div>
                 <div class="col-md-6 text-end">
-                    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                    <a href="{{ route('security.create') }}" class="btn btn-primary">
                         <i class="mdi mdi-plus me-1"></i>
                         Tambah Tamu
                     </a>
                 </div>
             </div>
-            
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -48,22 +45,20 @@
                     <tbody>
                         @forelse($tamus as $tamu)
                             <tr>
-                                <td></td> <!-- nomor otomatis diisi oleh DataTables -->
+                                <td></td>
                                 <td>
                                     <h6 class="mb-0">{{ $tamu->nama }}</h6>
                                     @if($tamu->jumlah_rombongan > 1)
                                         <small class="text-muted">{{ $tamu->jumlah_rombongan }} orang</small>
                                     @endif
                                 </td>
-
                                 <td>{{ $tamu->email }}</td>
                                 <td>{{ Str::limit($tamu->tujuan, 30) }}</td>
                                 <td>{{ $tamu->jenisIdentitas->nama }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $tamu->status_color }}">
+                                    <span class="badge bg-{{ $tamu->status_color }}" data-status="{{ $tamu->status }}">
                                         {{ $tamu->status_text }}
                                     </span>
-
                                 </td>
                                 <td>{{ $tamu->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
@@ -79,12 +74,42 @@
                                                 <i class="mdi mdi-logout"></i>
                                             </button>
                                         @endif
+                                        
+                                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('security.show', $tamu->id) }}">
+                                                    <i class="mdi mdi-eye me-2 text-info"></i>
+                                                    Lihat Detail
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('security.edit', $tamu->id) }}">
+                                                    <i class="mdi mdi-pencil me-2 text-warning"></i>
+                                                    Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger btn-delete"
+                                                    data-id="{{ $tamu->id }}"
+                                                    data-name="{{ $tamu->nama }}">
+                                                    <i class="mdi mdi-delete me-2"></i>
+                                                    Hapus
+                                                </button>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="mdi mdi-account-off mdi-48px text-muted mb-2"></i>
                                         <p class="text-muted">Belum ada data tamu</p>
@@ -107,7 +132,7 @@
 
         <script>
             $(document).ready(function () {
-                // Inisialisasi DataTable dengan responsive
+                // Inisialisasi DataTable
                 $('#recentGuestsTable').DataTable({
                     pageLength: 10,
                     order: [[6, 'desc']],
@@ -132,24 +157,35 @@
                     ],
                     columnDefs: [
                         {
-                            targets: 0,          // kolom pertama (No)
-                            orderable: false,    // supaya nggak bisa di-sort
-                            searchable: false,   // supaya nggak ikut search
+                            targets: 0,
+                            orderable: false,
+                            searchable: false,
                             render: function (data, type, row, meta) {
                                 return meta.row + meta.settings._iDisplayStart + 1;
                             }
+                        },
+                        {
+                            targets: 5, // kolom status
+                            render: function (data, type, row) {
+                                if (type === 'filter') {
+                                    // Ambil data-status dari span badge
+                                    return $(data).attr('data-status');
+                                }
+                                return data;
+                            }
                         }
+
+                        
                     ],
                     initComplete: function () {
                         var api = this.api();
 
-                        // === Styling search bawaan ===
                         var $search = $('#recentGuestsTable_filter input')
                             .attr('placeholder', '...')
                             .addClass('form-control');
                         $('#recentGuestsTable_filter label').contents().filter(function () {
                             return this.nodeType === 3;
-                        }).remove(); // hapus label "Search:"
+                        }).remove();
 
                         $('#recentGuestsTable_filter').addClass('form-group mb-0 me-3');
                         $('#recentGuestsTable_filter').prepend('<label class="form-label d-block"><i class="mdi mdi-account-search"></i> Cari Tamu</label>');
@@ -157,13 +193,17 @@
                         $search.wrap('<div class="input-group"></div>');
                         $search.after('<button class="btn btn-outline-primary" type="button"><i class="mdi mdi-magnify"></i></button>');
 
-                        // === Tambah filter status + refresh sebaris ===
                         var filterHtml = $(
                             '<div class="d-flex align-items-end mb-3">' +
-                            '  <div class="form-group mb-0 me-4">' +
+                            '  <div class="form-group mb-0 me-4" style="min-width: 200px;">' +
                             '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
-                            '    <select id="statusFilter" class="form-select form-select-sm">' +
+                            '    <select id="statusFilter" class="form-select">' +
                             '      <option value="">Semua Status</option>' +
+                            '      <option value="belum_checkin">Belum Checkin</option>' +
+                            '      <option value="checkin">Checkin</option>' +
+                            '      <option value="approved">Approved</option>' +
+                            '      <option value="rejected">Rejected</option>' +
+                            '      <option value="checked_out">Checked Out</option>' +
                             '    </select>' +
                             '  </div>' +
                             '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
@@ -174,18 +214,27 @@
 
                         $('#recentGuestsTable_filter').after(filterHtml);
 
-                        // isi dropdown otomatis dari kolom status (index 5)
-                        api.column(5).data().unique().sort().each(function (d) {
-                            $('#statusFilter').append('<option value="' + d + '">' + d + '</option>');
-                        });
-
-                        // event filter status
+                        // Event filter menggunakan data-status attribute
                         $('#statusFilter').on('change', function () {
-                            var val = $.fn.dataTable.util.escapeRegex($(this).val());
-                            api.column(5).search(val ? '^' + val + '$' : '', true, false).draw();
-                        });
-                    },
+                            var val = $(this).val();
 
+                            if (val === '') {
+                                api.column(5).search('').draw();
+                            } else {
+                                api.column(5).search('').draw(); // reset dulu
+
+                                api.column(5).nodes().each(function (cell, i) {
+                                    var status = $(cell).find('span').data('status');
+                                    if (status !== val) {
+                                        api.row(i).nodes().to$().hide(); 
+                                    } else {
+                                        api.row(i).nodes().to$().show();
+                                    }
+                                });
+                            }
+                        });
+
+                    },
                     language: {
                         search: "",
                         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
@@ -200,10 +249,45 @@
                     }
                 });
 
+                // ===== HANDLER DELETE - INI YANG KURANG =====
+                $(document).on('click', '.btn-delete', function () {
+                    const tamuId = $(this).data('id');
+                    const tamuName = $(this).data('name');
+                    const button = $(this);
 
+                    if (confirm(`Apakah Anda yakin ingin menghapus data tamu "${tamuName}"?\n\nData yang dihapus tidak dapat dikembalikan!`)) {
+                        button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin me-2"></i> Menghapus...');
 
+                        $.ajax({
+                            url: `/security/${tamuId}`,
+                            method: 'DELETE',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    showAlert('success', response.message || 'Data tamu berhasil dihapus');
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                } else {
+                                    showAlert('danger', response.message || 'Gagal menghapus data');
+                                    button.prop('disabled', false).html('<i class="mdi mdi-delete me-2"></i> Hapus');
+                                }
+                            },
+                            error: function (xhr) {
+                                console.error('Delete error:', xhr);
+                                let errorMsg = 'Terjadi kesalahan saat menghapus data';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMsg = xhr.responseJSON.message;
+                                }
+                                showAlert('danger', errorMsg);
+                                button.prop('disabled', false).html('<i class="mdi mdi-delete me-2"></i> Hapus');
+                            }
+                        });
+                    }
+                });
 
-                // Check-in dan Check-out
                 // Check-in
                 $(document).on('click', '.checkin-btn', function () {
                     const tamuId = $(this).data('id');
@@ -232,7 +316,7 @@
                                 }
                             },
                             error: function (xhr) {
-                                console.log(xhr.responseText); // debug server
+                                console.log(xhr.responseText);
                                 showAlert('danger', 'Terjadi kesalahan saat check-in');
                                 button.prop('disabled', false).html('<i class="mdi mdi-login"></i>');
                             }
@@ -240,20 +324,27 @@
                     }
                 });
 
-
-                $('.checkout-btn').click(function () {
+                // Check-out
+                $(document).on('click', '.checkout-btn', function () {
                     const tamuId = $(this).data('id');
                     const tamuName = $(this).data('name');
                     const button = $(this);
+
                     if (confirm(`Apakah Anda yakin akan check-out tamu ${tamuName}?`)) {
                         button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>');
+
                         $.ajax({
                             url: `/security/tamu/${tamuId}/checkout`,
                             method: 'POST',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            },
                             success: function (response) {
                                 if (response.success) {
                                     showAlert('success', response.message);
-                                    location.reload();
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
                                 } else {
                                     showAlert('danger', response.message);
                                     button.prop('disabled', false).html('<i class="mdi mdi-logout"></i>');
@@ -267,29 +358,29 @@
                     }
                 });
 
-                // Fungsi alert sederhana
+                // Fungsi alert
                 function showAlert(type, message) {
                     const alertHtml = `
-                                                                                                                                            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                                                                                                                                                ${message}
-                                                                                                                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                                                                                                            </div>`;
+                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>`;
                     $('main').prepend(alertHtml);
                     setTimeout(() => $('.alert').fadeOut(), 5000);
                 }
 
-                // Fungsi QR Code sederhana
+                // Fungsi QR Code
                 function showQrCode(qrUrl, tamuName) {
                     const qrContent = `
-                                                                                                                                            <div id="printArea">
-                                                                                                                                                <h5>${tamuName}</h5>
-                                                                                                                                                <div class="mb-3">
-                                                                                                                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                                                                                                                                                         alt="QR Code" class="img-fluid">
-                                                                                                                                                </div>
-                                                                                                                                                <p class="small">Tunjukkan QR Code ini ke pegawai</p>
-                                                                                                                                                <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
-                                                                                                                                            </div>`;
+                        <div id="printArea">
+                            <h5>${tamuName}</h5>
+                            <div class="mb-3">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+                                     alt="QR Code" class="img-fluid">
+                            </div>
+                            <p class="small">Tunjukkan QR Code ini ke pegawai</p>
+                            <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
+                        </div>`;
                     $('#qrContent').html(qrContent);
                     $('#qrModal').modal('show');
                 }
@@ -304,18 +395,14 @@
                 color: white;
             }
 
-            /* Samain ukuran tombol search dengan tinggi input */
             .dataTables_filter .input-group .btn {
                 padding: 0.375rem 0.5rem;
-                /* lebih kecil */
                 border-top-left-radius: 0;
                 border-bottom-left-radius: 0;
             }
 
-            /* Iconnya biar pas */
             .dataTables_filter .input-group .btn i {
                 font-size: 1rem;
-                /* default text size */
                 line-height: 1;
             }
         </style>

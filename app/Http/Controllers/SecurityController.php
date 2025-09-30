@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Tamu;
 use App\Models\Security;
 use App\Models\TamuModel;
+use App\Models\JenisIdentitasModel;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller;
@@ -55,26 +57,49 @@ class SecurityController extends Controller
         $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
-        return view('pages.security.show', compact('tamu'));
+        return view('pages.tamu.show', compact('tamu'));
     }
 
-    // Tambah tamu
+    public function create()
+    {
+        $jenisIdentitas = JenisIdentitasModel::all();
+        return view('pages.tamu.create', compact('jenisIdentitas'));
+    }
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
-            'jenis_identitas_id' => 'required|exists:jenis_identitas,id',
-            'no_identitas' => 'required|string|max:50',
-            'tujuan' => 'nullable|string|max:255',
+            'alamat' => 'required|string',
+            'no_telepon' => 'required|string|max:20',
+            'tujuan' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'jumlah_rombongan' => 'nullable|integer|min:1',
+            'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
         ]);
 
-        $tamu = TamuModel::create($validated);
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'errors' => $validator->errors()
+        //     ], 422);
+        // }
 
-        return response()->json([
-            'success' => true, 
-            'message' => 'Tamu berhasil ditambahkan', 
-            'tamu' => $tamu
-        ]);
+        $tamu = TamuModel::create($validator->validated());
+
+        return redirect()
+        ->route('security.list') 
+        ->with('success', 'Tamu berhasil ditambahkan');
+
+    }
+
+        // Menampilkan form edit
+    public function edit($id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+        $jenisIdentitas = JenisIdentitasModel::all();
+        
+        return view('pages.tamu.edit', compact('tamu', 'jenisIdentitas'));
     }
 
     // Edit tamu
@@ -84,23 +109,22 @@ class SecurityController extends Controller
 
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'jenis_identitas_id' => 'required|exists:jenis_identitas,id',
-            'no_identitas' => 'required|string|max:50',
-            'tujuan' => 'nullable|string|max:255',
-            'status' => 'nullable|in:belum_checkin,checkin,approved,checkout',
+            'alamat' => 'required|string',
+            'no_telepon' => 'required|string|max:20',
+            'tujuan' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'jumlah_rombongan' => 'nullable|integer|min:1',
+            'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
         ]);
 
         $tamu->update($validated);
 
-        return response()->json([
-            'success' => true, 
-            'message' => 'Tamu berhasil diperbarui', 
-            'tamu' => $tamu
-        ]);
+        return redirect()->route('security.list')
+            ->with('success', 'Data tamu berhasil diperbarui');
     }
 
     // Hapus tamu
-    public function destroy($id)
+    public function delete($id)
     {
         $tamu = TamuModel::findOrFail($id);
         $tamu->delete();

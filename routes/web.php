@@ -102,7 +102,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}', [SecurityController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [SecurityController::class, 'edit'])->name('edit');
         Route::put('/{id}', [SecurityController::class, 'update'])->name('update');
-        Route::delete('/{id}', [SecurityController::class, 'destroy'])->name('destroy');
+        Route::delete('/{id}', [SecurityController::class, 'delete'])->name('delete');
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
     });
