@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tamu;
+use App\Models\TamuModel;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 
 class PegawaiController extends Controller
 {
@@ -18,7 +19,7 @@ class PegawaiController extends Controller
     // Halaman dashboard pegawai
     public function index()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+    $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->get();
         
@@ -29,27 +30,71 @@ class PegawaiController extends Controller
             'approved' => $tamus->where('status', 'approved')->count(),
         ];
 
-        return view('pegawai.dashboard', compact('tamus', 'stats'));
+        return view('pages.pegawai.dashboard', compact('tamus', 'stats'));
     }
 
     // List tamu dengan pagination
     public function list()
     {
-        $tamus = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                      ->orderBy('created_at', 'desc')
                      ->paginate(10);
         
-        return view('pegawai.tamu.index', compact('tamus'));
+        return view('pages.pegawai.tamu.index', compact('tamus'));
     }
 
     // Detail tamu
     public function show($id)
     {
-        $tamu = Tamu::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
-        return view('pegawai.tamu.detail', compact('tamu'));
+        return view('pages.pegawai.tamu.detail', compact('tamu'));
     }
+
+    // Approve tamu yang sudah checkin
+public function approveTamu($id)
+{
+    try {
+        // cek dulu apakah datanya ketemu
+        $tamu = TamuModel::find($id);
+        if (!$tamu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tamu tidak ditemukan',
+            ], 404);
+        }
+
+        // debug: cek data tamu sebelum update
+        \Log::info('Before update:', $tamu->toArray());
+
+        $update = $tamu->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        // debug: cek hasil update
+        \Log::info('Update result:', [$update]);
+        \Log::info('After update:', $tamu->fresh()->toArray());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tamu approved successfully',
+            'data' => $tamu->fresh()
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Approve Error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+
 
     // Notifikasi
     public function notifications()

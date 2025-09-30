@@ -5,6 +5,7 @@ use App\Http\Controllers\TamuController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Models\JenisIdentitas;
 
@@ -70,7 +71,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{tamu}', function(\App\Models\TamuModel $tamu) {
                 $tamu->delete();
                 return response()->json(['success' => true, 'message' => 'Tamu deleted successfully']);
-            })->name('delete');
+    })->name('delete');
         });
     });
     
@@ -84,17 +85,12 @@ Route::middleware('auth')->group(function () {
         // Pegawai specific routes bisa ditambah disini
         Route::get('/approval', function() {
             $tamus = \App\Models\TamuModel::where('status', 'checkin')->paginate(10);
-            return view('pages.pegawai.approval', compact('tamus'));
+            return view('pages.pegawai.index', compact('tamus'));
         })->name('approval');
-        
-        Route::post('/tamu/{tamu}/approve', function(\App\Models\TamuModel $tamu) {
-            $tamu->update([
-                'status' => 'approved',
-                'approved_by' => auth()->id(),
-                'approved_at' => now()
-            ]);
-            return response()->json(['success' => true, 'message' => 'Tamu approved successfully']);
-        })->name('tamu.approve');
+            
+        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approveTamu'])
+        ->name('tamu.approve');
+
     });
 
     // =================== SECURITY ROUTES (role_id = 3) ===================

@@ -92,7 +92,7 @@ class DashboardController extends Controller
     /**
      * Pegawai Dashboard  
      */
-    private function pegawaiDashboard()
+    public function pegawaiDashboard()
     {
         $tamus = TamuModel::where('status', 'checkin')
                      ->with(['jenisIdentitas', 'checkinBy'])
@@ -108,7 +108,7 @@ class DashboardController extends Controller
             'approval_rate' => $this->calculateApprovalRate(),
         ];
         
-        return view('pegawai.dashboard', compact('tamus', 'stats'));
+        return view('pages.pegawai.dashboard', compact('tamus', 'stats'));
     }
     
     /**

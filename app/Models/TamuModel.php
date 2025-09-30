@@ -19,6 +19,7 @@ class TamuModel extends Model
         'tujuan', 
         'email',
         'jumlah_rombongan',
+
         'jenis_identitas_id',
         // 'role_id',
         'qr_code',
@@ -30,6 +31,12 @@ class TamuModel extends Model
         'checkout_at',
         'approved_at'
     ];
+
+    protected $casts = [
+        'checkin_at' => 'datetime',
+        'checkout_at' => 'datetime',
+    ];
+
 
     // Relasi ke jenis identitas
     public function jenisIdentitas()
