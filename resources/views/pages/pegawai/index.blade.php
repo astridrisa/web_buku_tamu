@@ -214,8 +214,7 @@
                 });
 
                 // Approve
-                // event delegation biar jalan walau DataTables redraw
-$(document).on('click', '.approve-btn', function () {
+                $(document).on('click', '.approve-btn', function () {
     let button = $(this);
     let tamuId = button.data('id');
 
@@ -228,7 +227,19 @@ $(document).on('click', '.approve-btn', function () {
         success: function (response) {
             if (response.success) {
                 showAlert('success', response.message);
-                location.reload(); // reload tabel biar status update
+
+                // === Update tombol jadi Approved ===
+                button
+                    .removeClass('btn-primary btn-danger')
+                    .addClass('btn-warning')
+                    .html('<i class="mdi mdi-check"></i> Approved')
+                    .prop('disabled', true);
+
+                // === Update kolom status di baris tabel ===
+                button.closest('tr').find('.status-text')
+                    .removeClass('badge-danger badge-secondary')
+                    .addClass('badge-warning')
+                    .text('approved');
             } else {
                 showAlert('danger', response.message);
                 button.prop('disabled', false).html('<i class="mdi mdi-check-circle"></i> Approve');
@@ -241,6 +252,8 @@ $(document).on('click', '.approve-btn', function () {
         }
     });
 });
+
+
 
 
 

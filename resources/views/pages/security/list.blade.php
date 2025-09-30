@@ -28,7 +28,7 @@
                     </a>
                 </div>
             </div>
-            
+
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -248,8 +248,11 @@
                     if (confirm(`Apakah Anda yakin akan check-out tamu ${tamuName}?`)) {
                         button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>');
                         $.ajax({
-                            url: `/security/tamu/${tamuId}/checkout`,
+                            url: `/security/${tamuId}/checkout`,   // ✅ benar, sesuai route
                             method: 'POST',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            },
                             success: function (response) {
                                 if (response.success) {
                                     showAlert('success', response.message);
@@ -259,21 +262,23 @@
                                     button.prop('disabled', false).html('<i class="mdi mdi-logout"></i>');
                                 }
                             },
-                            error: function () {
+                            error: function (xhr) {
+                                console.log(xhr.responseText); // debug
                                 showAlert('danger', 'Terjadi kesalahan saat check-out');
                                 button.prop('disabled', false).html('<i class="mdi mdi-logout"></i>');
                             }
                         });
+
                     }
                 });
 
                 // Fungsi alert sederhana
                 function showAlert(type, message) {
                     const alertHtml = `
-                                                                                                                                            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                                                                                                                                                ${message}
-                                                                                                                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                                                                                                            </div>`;
+                                                                                                                                                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                                                                                                                                        ${message}
+                                                                                                                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                                                                                                                    </div>`;
                     $('main').prepend(alertHtml);
                     setTimeout(() => $('.alert').fadeOut(), 5000);
                 }
@@ -281,15 +286,15 @@
                 // Fungsi QR Code sederhana
                 function showQrCode(qrUrl, tamuName) {
                     const qrContent = `
-                                                                                                                                            <div id="printArea">
-                                                                                                                                                <h5>${tamuName}</h5>
-                                                                                                                                                <div class="mb-3">
-                                                                                                                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                                                                                                                                                         alt="QR Code" class="img-fluid">
-                                                                                                                                                </div>
-                                                                                                                                                <p class="small">Tunjukkan QR Code ini ke pegawai</p>
-                                                                                                                                                <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
-                                                                                                                                            </div>`;
+                                                                                                                                                    <div id="printArea">
+                                                                                                                                                        <h5>${tamuName}</h5>
+                                                                                                                                                        <div class="mb-3">
+                                                                                                                                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+                                                                                                                                                                 alt="QR Code" class="img-fluid">
+                                                                                                                                                        </div>
+                                                                                                                                                        <p class="small">Tunjukkan QR Code ini ke pegawai</p>
+                                                                                                                                                        <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
+                                                                                                                                                    </div>`;
                     $('#qrContent').html(qrContent);
                     $('#qrModal').modal('show');
                 }
