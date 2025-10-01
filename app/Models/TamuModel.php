@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\UserModel;
 use App\Models\JenisIdentitasModel;
 
+/**
+ * @mixin IdeHelperTamuModel
+ */
 class TamuModel extends Model
 {
     use HasFactory;
@@ -69,7 +72,7 @@ public function getStatusColorAttribute()
         'belum_checkin' => 'warning',
         'checkin' => 'success',
         'approved' => 'primary',
-        'checkout' => 'secondary',
+        'checkout' => 'danger',
         default => 'dark',
     };
 }

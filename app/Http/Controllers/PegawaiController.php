@@ -6,14 +6,15 @@ use App\Models\TamuModel;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Routing\Controller as BaseController;
 
-
-class PegawaiController extends Controller
+class PegawaiController extends BaseController
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:pegawai'); // hanya pegawai
+        // $this->middleware('role:pegawai'); // hanya pegawai
     }
 
     // Halaman dashboard pegawai
@@ -66,17 +67,23 @@ public function approveTamu($id)
         }
 
         // debug: cek data tamu sebelum update
-        \Log::info('Before update:', $tamu->toArray());
+        Log::info('Before update:', $tamu->toArray());
+
+        
+        Log::info('DEBUG AUTH:', [
+            'id' => auth()->id(),
+            'user' => auth()->user(),
+        ]);
 
         $update = $tamu->update([
             'status' => 'approved',
-            'approved_by' => auth()->id(),
+            'approved_by' => auth()->user()->id,
             'approved_at' => now(),
         ]);
 
         // debug: cek hasil update
-        \Log::info('Update result:', [$update]);
-        \Log::info('After update:', $tamu->fresh()->toArray());
+        Log::info('Update result:', [$update]);
+        Log::info('After update:', $tamu->fresh()->toArray());
 
         return response()->json([
             'success' => true,
@@ -84,7 +91,7 @@ public function approveTamu($id)
             'data' => $tamu->fresh()
         ]);
     } catch (\Exception $e) {
-        \Log::error('Approve Error: ' . $e->getMessage());
+        Log::error('Approve Error: ' . $e->getMessage());
         return response()->json([
             'success' => false,
             'message' => $e->getMessage(),

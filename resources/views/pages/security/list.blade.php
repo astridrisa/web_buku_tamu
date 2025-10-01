@@ -26,6 +26,7 @@
                     </a>
                 </div>
             </div>
+
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -334,7 +335,7 @@
                         button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>');
 
                         $.ajax({
-                            url: `/security/tamu/${tamuId}/checkout`,
+                            url: `/security/${tamuId}/checkout`,   // ✅ benar, sesuai route
                             method: 'POST',
                             data: {
                                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -350,11 +351,13 @@
                                     button.prop('disabled', false).html('<i class="mdi mdi-logout"></i>');
                                 }
                             },
-                            error: function () {
+                            error: function (xhr) {
+                                console.log(xhr.responseText); // debug
                                 showAlert('danger', 'Terjadi kesalahan saat check-out');
                                 button.prop('disabled', false).html('<i class="mdi mdi-logout"></i>');
                             }
                         });
+
                     }
                 });
 

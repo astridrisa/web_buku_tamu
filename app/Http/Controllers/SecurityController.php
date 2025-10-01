@@ -165,22 +165,32 @@ class SecurityController extends Controller
     }
 
     // Checkout tamu
-    public function checkout(Request $request, $id)
+    public function checkout($id)
     {
-        $tamu = TamuModel::findOrFail($id);
-        
-        if ($tamu->status !== 'approved') {
-            return response()->json(['success' => false, 'message' => 'Tamu belum disetujui pegawai']);
+        try {
+            \Log::info("Checkout request masuk untuk tamu ID: {$id}, user: " . auth()->id());
+
+            $tamu = TamuModel::findOrFail($id);
+            \Log::info('AUTH ID TYPE:', [gettype(auth()->id())]);
+            \Log::info('AUTH ID VALUE:', [auth()->id()]);
+            \Log::info('AUTH USER:', ['user' => auth()->user()]);
+            \Log::info('USER ID TYPE:', [gettype(auth()->user()->id)]);
+            \Log::info('USER ID VALUE:', [auth()->user()->id]);
+
+
+            $tamu->update([
+                'status' => 'checkout',
+            
+                'checkout_at' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
+        } catch (\Exception $e) {
+            \Log::error('Checkout Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-
-        $tamu->update([
-            'status' => 'checkout',
-            'checkout_at' => now(),
-            'checkout_by' => Auth::id()
-        ]);
-
-        return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
     }
+
 
     // Notifikasi
     public function notifications()

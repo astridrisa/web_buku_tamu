@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\UserModel;
 
+/**
+ * @mixin IdeHelperRoleModel
+ */
 class RoleModel extends Model
 {
     use HasFactory;
