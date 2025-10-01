@@ -11,10 +11,11 @@ use Illuminate\Routing\Controller as BaseController;
 
 class PegawaiController extends BaseController
 {
-    public function __construct()
+    protected $notificationService;
+    public function __construct(NotificationService $notificationService)
     {
         $this->middleware('auth');
-        // $this->middleware('role:pegawai'); // hanya pegawai
+        $this->notificationService = $notificationService;
     }
 
     // Halaman dashboard pegawai
@@ -54,69 +55,87 @@ class PegawaiController extends BaseController
     }
 
     // Approve tamu yang sudah checkin
-public function approveTamu($id)
-{
-    try {
-        // cek dulu apakah datanya ketemu
-        $tamu = TamuModel::find($id);
-        if (!$tamu) {
+    public function approve($id)
+    {
+        try {
+            // cek dulu apakah datanya ketemu
+            $tamu = TamuModel::find($id);
+            if (!$tamu) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tamu tidak ditemukan',
+                ], 404);
+            }
+
+            // debug: cek data tamu sebelum update
+            Log::info('Before update:', $tamu->toArray());
+
+            
+            Log::info('DEBUG AUTH:', [
+                'id' => auth()->id(),
+                'user' => auth()->user(),
+            ]);
+
+            $update = $tamu->update([
+                'status' => 'approved',
+                'approved_by' => auth()->user()->id,
+                'approved_at' => now(),
+            ]);
+
+            // 🔔 KIRIM NOTIFIKASI KE SECURITY
+            $this->notificationService->notifySecurityApproved($tamu);
+            Log::info('Notification sent to security for approved guest ID: ' . $tamu->id);
+
+            // debug: cek hasil update
+            Log::info('Update result:', [$update]);
+            Log::info('After update:', $tamu->fresh()->toArray());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tamu approved successfully',
+                'data' => $tamu->fresh()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Approve Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Data tamu tidak ditemukan',
-            ], 404);
+                'message' => $e->getMessage(),
+            ], 500);
         }
+    }
 
-        // debug: cek data tamu sebelum update
-        Log::info('Before update:', $tamu->toArray());
-
-        
-        Log::info('DEBUG AUTH:', [
-            'id' => auth()->id(),
-            'user' => auth()->user(),
-        ]);
-
-        $update = $tamu->update([
-            'status' => 'approved',
-            'approved_by' => auth()->user()->id,
-            'approved_at' => now(),
-        ]);
-
-        // debug: cek hasil update
-        Log::info('Update result:', [$update]);
-        Log::info('After update:', $tamu->fresh()->toArray());
+     /**
+     * Get notifications untuk pegawai
+     */
+    public function notifications()
+    {
+        $notifications = $this->notificationService->getRecentNotifications(Auth::id());
+        $unreadCount = $this->notificationService->getUnreadCount(Auth::id());
 
         return response()->json([
             'success' => true,
-            'message' => 'Tamu approved successfully',
-            'data' => $tamu->fresh()
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount
         ]);
-    } catch (\Exception $e) {
-        Log::error('Approve Error: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-}
-
-
-
-
-
-    // Notifikasi
-    public function notifications()
-    {
-        $notifications = Auth::user()->notifications()->latest()->take(10)->get();
-        return response()->json($notifications);
     }
 
-    // Tandai notifikasi sudah dibaca
+    /**
+     * Mark notification sebagai dibaca
+     */
     public function markNotificationRead($id)
     {
-        $notification = Auth::user()->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
-        }
+        $success = $this->notificationService->markAsRead(Auth::id(), $id);
+
+        return response()->json(['success' => $success]);
+    }
+
+    /**
+     * Mark all notifications sebagai dibaca
+     */
+    public function markAllNotificationsRead()
+    {
+        $this->notificationService->markAllAsRead(Auth::id());
+
         return response()->json(['success' => true]);
     }
 }

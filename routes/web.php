@@ -88,8 +88,13 @@ Route::middleware('auth')->group(function () {
             return view('pages.pegawai.index', compact('tamus'));
         })->name('approval');
             
-        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approveTamu'])
+        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
         ->name('tamu.approve');
+    
+        // Notifications
+        Route::get('/notifications', [PegawaiController::class, 'notifications'])->name('notifications');
+        Route::post('/notifications/{id}/read', [PegawaiController::class, 'markNotificationRead'])->name('notifications.read');
+        Route::post('/notifications/mark-all-read', [PegawaiController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
 
     });
 
@@ -105,6 +110,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [SecurityController::class, 'delete'])->name('delete');
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
+
+        // Check-in & Check-out
+        Route::post('/checkin/{id}', [SecurityController::class, 'checkin'])->name('checkin');
+        Route::post('/checkout/{id}', [SecurityController::class, 'checkout'])->name('checkout');
+        
+        // Notifications
+        Route::get('/notifications', [SecurityController::class, 'notifications'])->name('notifications');
+        Route::post('/notifications/{id}/read', [SecurityController::class, 'markNotificationRead'])->name('notifications.read');
+        Route::post('/notifications/mark-all-read', [SecurityController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
     });
 
 });

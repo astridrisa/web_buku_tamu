@@ -4,13 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\TamuModel;
 use App\Models\JenisIdentitasModel;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
+
 class TamuController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     // Menampilkan form registrasi
     public function index()
     {
@@ -65,7 +74,12 @@ class TamuController extends Controller
             // PERBAIKAN: Gunakan TamuModel yang konsisten
             $tamu = TamuModel::create($validated);
 
-            Log::info('Tamu created successfully:', $tamu->toArray());
+            // 🔔 KIRIM NOTIFIKASI KE SECURITY
+            $this->notificationService->notifySecurityNewGuest($tamu);
+
+            Log::info('Tamu registered and notification sent to security');
+
+            // Log::info('Tamu created successfully:', $tamu->toArray());
 
             return response()->json([
                 'success' => true,

@@ -5,7 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Tamu;
 use App\Models\Security;
 use App\Models\TamuModel;
+use App\Models\UserModel;
 use App\Models\JenisIdentitasModel;
+use App\Services\QrCodeService;
+use App\Services\NotificationService;
+use App\Mail\TamuQrCodeMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,16 +19,20 @@ use Illuminate\Routing\Controller;
 
 class SecurityController extends Controller
 {
-    public function __construct()
+    protected $qrCodeService;
+    protected $notificationService;
+    
+    public function __construct(QrCodeService $qrCodeService, NotificationService $notificationService)
     {
         $this->middleware('auth');
+        $this->qrCodeService = $qrCodeService;
+        $this->notificationService = $notificationService;
     }
 
     // Halaman dashboard
     public function index()
     {
         if (Auth::user()->role_id != 3) {
-            // kalau bukan role security, balikin 403
             abort(403, 'Unauthorized access');
         }
 
@@ -37,9 +47,11 @@ class SecurityController extends Controller
             'approved' => $tamus->where('status', 'approved')->count(),
         ];
 
+        // 🔔 Ambil notifikasi untuk security
+        $notifications = $this->notificationService->getUserNotifications(Auth::user());
+
         return view('pages.security.list', compact('tamus', 'stats'));
     }
-
 
     // List tamu dengan pagination
     public function list()
@@ -78,22 +90,18 @@ class SecurityController extends Controller
             'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
         ]);
 
-        // if ($validator->fails()) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'errors' => $validator->errors()
-        //     ], 422);
-        // }
+        $data = $validator->validated();
+        $data['status'] = 'belum_checkin';
+        $data['qr_code'] = \Illuminate\Support\Str::uuid();
 
-        $tamu = TamuModel::create($validator->validated());
+        TamuModel::create($data);
 
         return redirect()
-        ->route('security.list') 
-        ->with('success', 'Tamu berhasil ditambahkan');
-
+            ->route('security.list') 
+            ->with('success', 'Tamu berhasil ditambahkan');
     }
 
-        // Menampilkan form edit
+    // Menampilkan form edit
     public function edit($id)
     {
         $tamu = TamuModel::findOrFail($id);
@@ -138,9 +146,8 @@ class SecurityController extends Controller
     // Checkin tamu
     public function checkin(Request $request, $id)
     {
-        // Debug Auth
-         \Log::info('Auth ID: ' . Auth::id());
-        \Log::info('Auth user: ', (array) Auth::user());
+        Log::info('Auth ID: ' . Auth::id());
+        Log::info('Auth user: ', (array) Auth::user());
 
         $tamu = TamuModel::findOrFail($id);
         
@@ -151,11 +158,19 @@ class SecurityController extends Controller
         $tamu->update([
             'status' => 'checkin',
             'checkin_at' => now(),
-            'checkin_by' =>  (int) Auth::user()->id
+            'checkin_by' => (int) Auth::user()->id
         ]);
 
-        // Generate QR Code
-        $tamu->generateQrCode();
+        // 📱 GENERATE QR CODE
+        $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
+
+        // 📧 KIRIM EMAIL KE TAMU
+        Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
+
+        // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
+        $this->notificationService->notifyPegawaiCheckedIn($tamu);
+
+        Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
 
         return response()->json([
             'success' => true, 
@@ -165,47 +180,109 @@ class SecurityController extends Controller
     }
 
     // Checkout tamu
-    public function checkout($id)
+    public function checkout(Request $request, $id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+        
+        if ($tamu->status !== 'approved') {
+            return response()->json(['success' => false, 'message' => 'Tamu belum disetujui pegawai']);
+        }
+
+        $tamu->update([
+            'status' => 'checkout',
+            'checkout_at' => now(),
+            'checkout_by' => Auth::id()
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
+    }
+
+    /**
+     * ✅ PERBAIKAN: Get notifications untuk security
+     */
+    public function notifications()
     {
         try {
-            \Log::info("Checkout request masuk untuk tamu ID: {$id}, user: " . auth()->id());
-
-            $tamu = TamuModel::findOrFail($id);
-            \Log::info('AUTH ID TYPE:', [gettype(auth()->id())]);
-            \Log::info('AUTH ID VALUE:', [auth()->id()]);
-            \Log::info('AUTH USER:', ['user' => auth()->user()]);
-            \Log::info('USER ID TYPE:', [gettype(auth()->user()->id)]);
-            \Log::info('USER ID VALUE:', [auth()->user()->id]);
-
-
-            $tamu->update([
-                'status' => 'checkout',
+            // Ambil user object, bukan hanya ID
+            $user = Auth::user();
             
-                'checkout_at' => now(),
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak ditemukan'
+                ], 401);
+            }
+
+            Log::info('Loading notifications for user: ' . $user->id);
+
+            // Gunakan user->id untuk service
+            $notifications = $this->notificationService->getRecentNotifications($user->id);
+            $unreadCount = $this->notificationService->getUnreadCount($user->id);
+
+            Log::info('Notifications loaded:', [
+                'count' => $notifications->count(),
+                'unread' => $unreadCount
             ]);
 
-            return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications,
+                'unread_count' => $unreadCount
+            ]);
+            
+
         } catch (\Exception $e) {
-            \Log::error('Checkout Error: ' . $e->getMessage());
+            Log::error('Error loading notifications: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat notifikasi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ PERBAIKAN: Mark notification sebagai dibaca
+     */
+    public function markNotificationRead($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+
+            $success = $this->notificationService->markAsRead($user->id, $id);
+
+            return response()->json(['success' => $success]);
+
+        } catch (\Exception $e) {
+            Log::error('Error marking notification as read: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-
-    // Notifikasi
-    public function notifications()
+    /**
+     * ✅ PERBAIKAN: Mark all notifications sebagai dibaca
+     */
+    public function markAllNotificationsRead()
     {
-        $notifications = Auth::user()->notifications()->latest()->take(10)->get();
-        return response()->json($notifications);
-    }
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
 
-    // Tandai notifikasi sudah dibaca
-    public function markNotificationRead($id)
-    {
-        $notification = Auth::user()->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
+            $this->notificationService->markAllAsRead($user->id);
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('Error marking all notifications as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-        return response()->json(['success' => true]);
     }
 }

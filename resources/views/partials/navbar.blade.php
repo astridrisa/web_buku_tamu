@@ -83,48 +83,33 @@
       </li> --}}
 
       {{-- Notifikasi --}}
-      <li class="nav-item dropdown">
+     <li class="nav-item dropdown">
         <a class="nav-link position-relative" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
           <i class="mdi mdi-bell-outline fs-3"></i>
-            <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">
-            3 
+          <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger" id="notif-badge" style="display: none;">
+            0
             <span class="visually-hidden">unread messages</span>
           </span>
         </a>
 
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
-          aria-labelledby="notificationDropdown">
-          <a class="dropdown-item py-3 border-bottom">
-            <p class="mb-0 font-weight-medium float-left">You have 4 new notifications</p>
-            <span class="badge badge-pill badge-primary float-right">View all</span>
-          </a>
-          <a class="dropdown-item preview-item py-3">
-            <div class="preview-thumbnail">
-              <i class="mdi mdi-alert m-auto text-primary"></i>
+        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" 
+             aria-labelledby="notificationDropdown" 
+             style="width: 380px; max-height: 450px; overflow-y: auto;">
+          
+          <div class="dropdown-header d-flex justify-content-between align-items-center py-3 border-bottom sticky-top bg-white">
+            <h6 class="mb-0 font-weight-medium">Notifikasi</h6>
+            <button class="btn btn-sm btn-link text-primary p-0" id="mark-all-read">
+              <small>Tandai semua dibaca</small>
+            </button>
+          </div>
+
+          <div id="notification-list">
+            <div class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
             </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject fw-normal text-dark mb-1">Application Error</h6>
-              <p class="fw-light small-text mb-0">Just now</p>
-            </div>
-          </a>
-          <a class="dropdown-item preview-item py-3">
-            <div class="preview-thumbnail">
-              <i class="mdi mdi-settings m-auto text-primary"></i>
-            </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject fw-normal text-dark mb-1">Settings</h6>
-              <p class="fw-light small-text mb-0">Private message</p>
-            </div>
-          </a>
-          <a class="dropdown-item preview-item py-3">
-            <div class="preview-thumbnail">
-              <i class="mdi mdi-airballoon m-auto text-primary"></i>
-            </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject fw-normal text-dark mb-1">New user registration</h6>
-              <p class="fw-light small-text mb-0">2 days ago</p>
-            </div>
-          </a>
+          </div>
         </div>
       </li>
 
@@ -209,3 +194,162 @@
     </button>
   </div>
 </nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+    setInterval(loadNotifications, 30000); // Refresh setiap 30 detik
+
+    document.getElementById('mark-all-read')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        markAllAsRead();
+    });
+});
+
+function loadNotifications() {
+    // Tentukan route berdasarkan role
+    let route = '';
+    @if(Auth::user()->role_id == 3)
+        route = '{{ route("security.notifications") }}';
+    @elseif(Auth::user()->role_id == 2)
+        route = '{{ route("pegawai.notifications") }}';
+    @endif
+
+    if (!route) return;
+
+    fetch(route, {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateNotificationBadge(data.unread_count);
+            renderNotifications(data.notifications);
+        }
+    })
+    .catch(error => console.error('Error loading notifications:', error));
+}
+
+function updateNotificationBadge(count) {
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+}
+
+function renderNotifications(notifications) {
+    const container = document.getElementById('notification-list');
+    
+    if (notifications.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <i class="mdi mdi-bell-off-outline" style="font-size: 48px; opacity: 0.3;"></i>
+                <p class="mt-3 mb-0">Tidak ada notifikasi</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    notifications.forEach(notif => {
+        const isUnread = !notif.read_at;
+        const bgClass = isUnread ? 'bg-light' : '';
+        const data = notif.data;
+        const icon = data.icon || 'mdi-bell';
+        const timeAgo = formatTimeAgo(notif.created_at);
+
+        html += `
+            <a class="dropdown-item preview-item py-3 border-bottom ${bgClass}" 
+               href="${data.action_url || '#'}" 
+               onclick="markAsRead('${notif.id}', event)">
+                <div class="preview-thumbnail">
+                    <i class="mdi ${icon} m-auto text-primary" style="font-size: 32px;"></i>
+                </div>
+                <div class="preview-item-content flex-grow">
+                    <h6 class="preview-subject fw-normal text-dark mb-1">
+                        ${data.title || 'Notifikasi'}
+                        ${isUnread ? '<span class="badge bg-primary badge-sm ms-2">Baru</span>' : ''}
+                    </h6>
+                    <p class="fw-light small mb-1">${data.message || ''}</p>
+                    <p class="fw-light text-muted mb-0" style="font-size: 11px;">
+                        <i class="mdi mdi-clock-outline"></i> ${timeAgo}
+                    </p>
+                </div>
+            </a>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (seconds < 60) return 'Baru saja';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' menit yang lalu';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' jam yang lalu';
+    if (seconds < 604800) return Math.floor(seconds / 86400) + ' hari yang lalu';
+    
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function markAsRead(notificationId, event) {
+    let route = '';
+    @if(Auth::user()->role_id == 3)
+        route = '{{ url("security/notifications") }}/' + notificationId + '/read';
+    @elseif(Auth::user()->role_id == 2)
+        route = '{{ url("pegawai/notifications") }}/' + notificationId + '/read';
+    @endif
+
+    if (!route) return;
+
+    fetch(route, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadNotifications();
+        }
+    })
+    .catch(error => console.error('Error marking notification as read:', error));
+}
+
+function markAllAsRead() {
+    let route = '';
+    @if(Auth::user()->role_id == 3)
+        route = '{{ route("security.notifications.mark-all-read") }}';
+    @elseif(Auth::user()->role_id == 2)
+        route = '{{ route("pegawai.notifications.mark-all-read") }}';
+    @endif
+
+    if (!route) return;
+
+    fetch(route, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadNotifications();
+        }
+    })
+    .catch(error => console.error('Error marking all notifications as read:', error));
+}
+</script>
