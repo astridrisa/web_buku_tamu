@@ -135,7 +135,7 @@
                 // Inisialisasi DataTable
                 $('#recentGuestsTable').DataTable({
                     pageLength: 10,
-                    order: [[6, 'desc']],
+                    order: [[6, 'asc']],
                     responsive: true,
                     dom: '<"d-flex justify-content-between align-items-end mb-3 flex-wrap"<"d-flex gap-3"f><"d-flex gap-2"B>>rtip',
                     buttons: [

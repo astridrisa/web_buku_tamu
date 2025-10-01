@@ -45,7 +45,7 @@ class SecurityController extends Controller
     public function list()
     {
         $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-                     ->orderBy('created_at', 'desc')
+                     ->orderBy('created_at', 'asc')
                      ->get();
         
         return view('pages.security.list', compact('tamus'));
