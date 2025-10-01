@@ -61,7 +61,7 @@
                             <p class="text-muted mb-0">Sudah Check In</p>
                         </div>
                         <div class="icon-large text-info">
-                            <i class="mdi mdi-check"></i>
+                            <i class="mdi mdi-check-all"></i>
                         </div>
                     </div>
                 </div>

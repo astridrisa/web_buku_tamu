@@ -75,12 +75,12 @@
         <li class="nav-item nav-category">Staff Menu</li>
         
         <!-- Pegawai Dashboard -->
-        <li class="nav-item {{ $currentRoute == 'pegawai.dashboard' ? 'active' : '' }}">
+        {{-- <li class="nav-item {{ $currentRoute == 'pegawai.dashboard' ? 'active' : '' }}">
           <a class="nav-link" href="{{ route('pegawai.dashboard') }}">
             <i class="mdi mdi-view-dashboard menu-icon"></i>
             <span class="menu-title">Staff Dashboard</span>
           </a>
-        </li>
+        </li> --}}
 
         <!-- Approval Tamu -->
         <li class="nav-item {{ $currentRoute == 'pegawai.approval' ? 'active' : '' }}">
