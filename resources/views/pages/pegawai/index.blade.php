@@ -19,12 +19,12 @@
                     Daftar Tamu
                 </h5>
             </div>
-            <div class="col-md-6 text-end">
+            {{-- <div class="col-md-6 text-end">
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                     <i class="mdi mdi-plus me-1"></i>
                     Tambah Tamu
                 </a>
-            </div>
+            </div> --}}
         </div>
     </div>
     <div class="card-body">

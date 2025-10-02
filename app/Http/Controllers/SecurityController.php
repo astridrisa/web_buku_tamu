@@ -161,11 +161,11 @@ class SecurityController extends Controller
             'checkin_by' => (int) Auth::user()->id
         ]);
 
-        // 📱 GENERATE QR CODE
-        $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
+        // // 📱 GENERATE QR CODE
+        // $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
 
-        // 📧 KIRIM EMAIL KE TAMU
-        Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
+        // // 📧 KIRIM EMAIL KE TAMU
+        // Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
 
         // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
         $this->notificationService->notifyPegawaiCheckedIn($tamu);

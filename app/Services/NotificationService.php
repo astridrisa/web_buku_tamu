@@ -38,26 +38,30 @@ class NotificationService
     /**
      * Kirim notifikasi ke semua pegawai saat tamu check-in
      */
-    public function notifyPegawaiCheckedIn(TamuModel $tamu)
-    {
+   public function notifyPegawaiCheckedIn($tamu)
+{
+    Log::info("Memulai notifikasi check-in untuk tamu ID {$tamu->id}");
+
+    // Ambil semua pegawai dari tabel users
+    $pegawai = UserModel::where('role_id', 2)->get();
+
+    if ($pegawai->isEmpty()) {
+        Log::warning("Tidak ada pegawai (role_id = 2) untuk menerima notifikasi check-in tamu ID {$tamu->id}");
+        return;
+    }
+
+    foreach ($pegawai as $user) {
         try {
-            $pegawaiUsers = UserModel::where('role_id', 2)->get();
-            
-            Log::info('Sending check-in notification to ' . $pegawaiUsers->count() . ' pegawai users');
-            
-            if ($pegawaiUsers->isEmpty()) {
-                Log::warning('No pegawai users found to notify');
-                return;
-            }
-            
-            Notification::send($pegawaiUsers, new TamuCheckedInNotification($tamu));
-            
-            Log::info('Check-in notification sent successfully');
+            $user->notify(new TamuCheckedInNotification($tamu));
+            Log::info("Notifikasi check-in tamu ID {$tamu->id} dikirim ke pegawai ID {$user->id} ({$user->name})");
         } catch (\Exception $e) {
-            Log::error('Error sending check-in notification: ' . $e->getMessage());
-            throw $e;
+            Log::error("Gagal mengirim notifikasi ke pegawai ID {$user->id}: " . $e->getMessage());
         }
     }
+
+    Log::info("Notifikasi check-in untuk tamu ID {$tamu->id} selesai dikirim ke pegawai.");
+}
+
 
     /**
      * Kirim notifikasi ke security saat tamu di-approve pegawai
