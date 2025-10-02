@@ -7,6 +7,7 @@ use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
 use Illuminate\Routing\Controller as BaseController;
 
 class PegawaiController extends BaseController
@@ -108,34 +109,107 @@ class PegawaiController extends BaseController
      * Get notifications untuk pegawai
      */
     public function notifications()
-    {
-        $notifications = $this->notificationService->getRecentNotifications(Auth::id());
-        $unreadCount = $this->notificationService->getUnreadCount(Auth::id());
+{
+    try {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak ditemukan',
+                'notifications' => [],
+                'unread_count' => 0
+            ], 401);
+        }
+
+        Log::info('Loading notifications for pegawai user: ' . $user->id);
+
+        // Ambil notifikasi langsung dari user object (sama seperti Security)
+        $notifications = $user->notifications()
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(function($notification) {
+                $data = $notification->data;
+                if (is_string($data)) {
+                    $data = json_decode($data, true);
+                }
+                
+                return [
+                    'id' => $notification->id,
+                    'data' => $data ?: [],
+                    'read_at' => $notification->read_at,
+                    'created_at' => $notification->created_at->toISOString(),
+                ];
+            });
+
+        $unreadCount = $user->unreadNotifications()->count();
+
+        Log::info('Pegawai notifications loaded', [
+            'count' => $notifications->count(),
+            'unread' => $unreadCount
+        ]);
 
         return response()->json([
             'success' => true,
             'notifications' => $notifications,
             'unread_count' => $unreadCount
         ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error in Pegawai notifications: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage(),
+            'notifications' => [],
+            'unread_count' => 0
+        ], 500);
     }
+}
 
     /**
      * Mark notification sebagai dibaca
      */
     public function markNotificationRead($id)
-    {
-        $success = $this->notificationService->markAsRead(Auth::id(), $id);
+{
+    try {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['success' => false], 401);
+        }
 
-        return response()->json(['success' => $success]);
+        $notification = $user->notifications()->find($id);
+        if ($notification) {
+            $notification->markAsRead();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false]);
+
+    } catch (\Exception $e) {
+        Log::error('Error marking notification: ' . $e->getMessage());
+        return response()->json(['success' => false], 500);
     }
+}
 
-    /**
-     * Mark all notifications sebagai dibaca
-     */
-    public function markAllNotificationsRead()
-    {
-        $this->notificationService->markAllAsRead(Auth::id());
+public function markAllNotificationsRead()
+{
+    try {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['success' => false], 401);
+        }
+
+        $user->unreadNotifications->markAsRead();
 
         return response()->json(['success' => true]);
+
+    } catch (\Exception $e) {
+        Log::error('Error marking all notifications: ' . $e->getMessage());
+        return response()->json(['success' => false], 500);
     }
+}
 }

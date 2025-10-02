@@ -203,23 +203,41 @@ class SecurityController extends Controller
     public function notifications()
     {
         try {
-            // Ambil user object, bukan hanya ID
             $user = Auth::user();
             
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User tidak ditemukan'
+                    'message' => 'User tidak ditemukan',
+                    'notifications' => [],
+                    'unread_count' => 0
                 ], 401);
             }
 
-            Log::info('Loading notifications for user: ' . $user->id);
+            Log::info('Loading notifications for security user: ' . $user->id);
 
-            // Gunakan user->id untuk service
-            $notifications = $this->notificationService->getRecentNotifications($user->id);
-            $unreadCount = $this->notificationService->getUnreadCount($user->id);
+            $notifications = $user->notifications()
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(function($notification) {
+                    // Decode data jika string
+                    $data = $notification->data;
+                    if (is_string($data)) {
+                        $data = json_decode($data, true);
+                    }
+                    
+                    return [
+                        'id' => $notification->id,
+                        'data' => $data ?: [],  // ✅ Pastikan data ada di property 'data'
+                        'read_at' => $notification->read_at,
+                        'created_at' => $notification->created_at->toISOString(),
+                    ];
+                });
 
-            Log::info('Notifications loaded:', [
+            $unreadCount = $user->unreadNotifications()->count();
+
+            Log::info('Security notifications loaded', [
                 'count' => $notifications->count(),
                 'unread' => $unreadCount
             ]);
@@ -229,19 +247,18 @@ class SecurityController extends Controller
                 'notifications' => $notifications,
                 'unread_count' => $unreadCount
             ]);
-            
 
         } catch (\Exception $e) {
-            Log::error('Error loading notifications: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error in Security notifications: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memuat notifikasi: ' . $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage(),
+                'notifications' => [],
+                'unread_count' => 0
             ], 500);
         }
     }
-
     /**
      * ✅ PERBAIKAN: Mark notification sebagai dibaca
      */

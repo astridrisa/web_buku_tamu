@@ -87,15 +87,17 @@ Route::middleware('auth')->group(function () {
             $tamus = \App\Models\TamuModel::where('status', 'checkin')->paginate(10);
             return view('pages.pegawai.index', compact('tamus'));
         })->name('approval');
-            
-        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
-        ->name('tamu.approve');
-    
-        // Notifications
+
+         // Notifications
         Route::get('/notifications', [PegawaiController::class, 'notifications'])->name('notifications');
         Route::post('/notifications/{id}/read', [PegawaiController::class, 'markNotificationRead'])->name('notifications.read');
         Route::post('/notifications/mark-all-read', [PegawaiController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
 
+            
+        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
+        ->name('tamu.approve');
+    
+       
     });
 
     // =================== SECURITY ROUTES (role_id = 3) ===================
@@ -104,21 +106,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/list', [SecurityController::class, 'list'])->name('list');
         Route::get('/create', [SecurityController::class, 'create'])->name('create');
         Route::post('/store', [SecurityController::class, 'store'])->name('store');
+        
+        // ✅ PINDAHKAN NOTIFICATIONS KE ATAS SEBELUM /{id}
+        Route::get('/notifications', [SecurityController::class, 'notifications'])->name('notifications');
+        Route::post('/notifications/{id}/read', [SecurityController::class, 'markNotificationRead'])->name('notifications.read');
+        Route::post('/notifications/mark-all-read', [SecurityController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
+        
+        // Route dengan parameter {id} harus di bawah
         Route::get('/{id}', [SecurityController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [SecurityController::class, 'edit'])->name('edit');
         Route::put('/{id}', [SecurityController::class, 'update'])->name('update');
         Route::delete('/{id}', [SecurityController::class, 'delete'])->name('delete');
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
-
-        // Check-in & Check-out
-        Route::post('/checkin/{id}', [SecurityController::class, 'checkin'])->name('checkin');
-        Route::post('/checkout/{id}', [SecurityController::class, 'checkout'])->name('checkout');
-        
-        // Notifications
-        Route::get('/notifications', [SecurityController::class, 'notifications'])->name('notifications');
-        Route::post('/notifications/{id}/read', [SecurityController::class, 'markNotificationRead'])->name('notifications.read');
-        Route::post('/notifications/mark-all-read', [SecurityController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
     });
 
 });
