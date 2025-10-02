@@ -191,7 +191,7 @@ class SecurityController extends Controller
         $tamu->update([
             'status' => 'checkout',
             'checkout_at' => now(),
-            'checkout_by' => Auth::id()
+            'checkout_by' => (int) Auth::user()->id
         ]);
 
         return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
