@@ -161,16 +161,41 @@ class SecurityController extends Controller
             'checkin_by' => (int) Auth::user()->id
         ]);
 
-        // // 📱 GENERATE QR CODE
-        // $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
+        // // // 📱 GENERATE QR CODE
+        // // $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
 
-        // // 📧 KIRIM EMAIL KE TAMU
-        // Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
+        // // // 📧 KIRIM EMAIL KE TAMU
+        // // Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
 
-        // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
-        $this->notificationService->notifyPegawaiCheckedIn($tamu);
+        // // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
+        // $this->notificationService->notifyPegawaiCheckedIn($tamu);
 
-        Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
+        // Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
+
+        try {
+            // GENERATE QR CODE
+            $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
+            Log::info("QR Code generated at: {$qrCodePath}");
+
+            // KIRIM EMAIL KE TAMU
+            Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
+            Log::info("Email sent to: {$tamu->email}");
+
+            // Hapus QR code lama untuk hemat storage (optional)
+            // $this->qrCodeService->deleteOldQrCodes($tamu->id);
+
+        } catch (\Exception $e) {
+            Log::error("Error sending email: " . $e->getMessage());
+            // Tidak return error, karena checkin sudah berhasil
+        }
+
+        try {
+            // KIRIM NOTIFIKASI KE PEGAWAI
+            $this->notificationService->notifyPegawaiCheckedIn($tamu);
+            Log::info("Notification sent to pegawai");
+        } catch (\Exception $e) {
+            Log::error("Error sending notification: " . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true, 

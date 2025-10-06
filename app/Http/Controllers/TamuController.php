@@ -9,15 +9,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Services\QrCodeService;
 
 
 class TamuController extends Controller
 {
     protected $notificationService;
+    protected $qrCodeService;
 
-    public function __construct(NotificationService $notificationService)
+    public function __construct(NotificationService $notificationService, QrCodeService $qrCodeService)
     {
         $this->notificationService = $notificationService;
+        $this->qrCodeService = $qrCodeService;
     }
 
     // Menampilkan form registrasi
@@ -98,5 +101,17 @@ class TamuController extends Controller
                 'message' => 'Terjadi kesalahan server: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function showQrCode($qrCode)
+    {
+        $tamu = TamuModel::where('qr_code', $qrCode)->firstOrFail();
+        
+        // Generate QR Code as base64
+        $qrCodeBase64 = $this->qrCodeService->generateQrCodeBase64(
+            route('tamu.qr.show', $qrCode)
+        );
+        
+        return view('tamu.qrcode', compact('tamu'));
     }
 }

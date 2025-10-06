@@ -27,6 +27,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 });
 
+// Route untuk display QR Code (tanpa auth)
+Route::get('/tamu/qr/{qr_code}', [App\Http\Controllers\TamuController::class, 'showQrCode'])
+    ->name('tamu.qr.show');
+
 // Protected routes - hanya untuk user yang sudah login
 Route::middleware('auth')->group(function () {
     // Main dashboard route - akan redirect ke dashboard sesuai role

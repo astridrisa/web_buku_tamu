@@ -1,65 +1,84 @@
 <?php
+
 namespace App\Services;
 
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Facades\Storage;
 use App\Models\TamuModel;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class QrCodeService
 {
-    // /**
-    //  * Generate QR Code dan simpan ke storage
-    //  */
-    // public function generateQrCode($data, $filename)
-    // {
-    //     // Generate QR Code sebagai PNG
-    //     $qrCode = QrCode::format('png')
-    //         ->size(300)
-    //         ->margin(2)
-    //         ->errorCorrection('H')
-    //         ->generate($data);
+    public function generateTamuQrCode(TamuModel $tamu): string
+    {
+        try {
+            $qrUrl = route('tamu.qr.show', $tamu->qr_code);
+            
+            Log::info("Generating QR Code for tamu: {$tamu->id}, URL: {$qrUrl}");
 
-    //     // Path untuk menyimpan QR Code
-    //     $path = 'qrcodes/' . $filename;
-        
-    //     // Simpan ke storage/app/public/qrcodes
-    //     Storage::disk('public')->put($path, $qrCode);
+            // Generate QR Code SVG
+            $qrCode = QrCode::size(300)
+                ->margin(2)
+                ->errorCorrection('H')
+                ->encoding('UTF-8')
+                ->generate($qrUrl);
 
-    //     // Return full path untuk attachment email
-    //     return storage_path('app/public/' . $path);
-    // }
+            // ✅ Buat folder jika belum ada
+            $directory = storage_path('app' . DIRECTORY_SEPARATOR . 'qrcodes');
+            if (!File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+                Log::info("Created directory: {$directory}");
+            }
 
-    // /**
-    //  * Generate QR Code untuk tamu
-    //  */
-    // public function generateTamuQrCode(TamuModel $tamu)
-    // {
-    //     // Data yang akan di-encode ke QR Code
-    //     $data = json_encode([
-    //         'id' => $tamu->id,
-    //         'nama' => $tamu->nama,
-    //         'qr_code' => $tamu->qr_code,
-    //         'checkin_at' => $tamu->checkin_at ? $tamu->checkin_at->format('Y-m-d H:i:s') : null,
-    //         'tujuan' => $tamu->tujuan,
-    //     ]);
+            // ✅ Simpan file langsung dengan file_put_contents
+            $filename = 'qrcode_' . $tamu->id . '_' . time() . '.svg';
+            $fullPath = $directory . DIRECTORY_SEPARATOR . $filename;
+            
+            file_put_contents($fullPath, $qrCode);
+            
+            // Verifikasi file
+            if (file_exists($fullPath)) {
+                $fileSize = filesize($fullPath);
+                Log::info("✅ QR Code saved successfully at: {$fullPath} (Size: {$fileSize} bytes)");
+            } else {
+                Log::error("❌ QR Code file NOT created at: {$fullPath}");
+                throw new \Exception("Failed to save QR Code file");
+            }
 
-    //     $filename = 'tamu-' . $tamu->id . '-' . time() . '.png';
-        
-    //     return $this->generateQrCode($data, $filename);
-    // }
+            return $fullPath;
 
-    // /**
-    //  * Hapus QR Code dari storage
-    //  */
-    // public function deleteQrCode($filename)
-    // {
-    //     $path = 'qrcodes/' . $filename;
-        
-    //     if (Storage::disk('public')->exists($path)) {
-    //         Storage::disk('public')->delete($path);
-    //         return true;
-    //     }
-        
-    //     return false;
-    // }
+        } catch (\Exception $e) {
+            Log::error("Error generating QR Code: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            throw $e;
+        }
+    }
+
+    public function generateQrCodeBase64($data): string
+    {
+        $svg = QrCode::size(300)
+            ->margin(2)
+            ->errorCorrection('H')
+            ->encoding('UTF-8')
+            ->generate($data);
+            
+        return base64_encode($svg);
+    }
+
+    public function deleteOldQrCodes(int $tamuId): void
+    {
+        try {
+            $directory = storage_path('app' . DIRECTORY_SEPARATOR . 'qrcodes');
+            if (File::exists($directory)) {
+                $files = File::files($directory);
+                foreach ($files as $file) {
+                    if (str_contains($file->getFilename(), "qrcode_{$tamuId}_")) {
+                        File::delete($file);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("Failed to delete old QR codes: " . $e->getMessage());
+        }
+    }
 }
