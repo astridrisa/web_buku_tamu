@@ -36,19 +36,19 @@
                   Daftar User
                 </a>
               </li>
-              <li class="nav-item">
+              {{-- <li class="nav-item">
                 <a class="nav-link {{ $currentRoute == 'admin.users.create' ? 'active' : '' }}" 
                    href="{{ route('admin.users.create') }}">
                   <i class="mdi mdi-account-plus"></i>
                   Tambah User
                 </a>
-              </li>
+              </li> --}}
             </ul>
           </div>
         </li>
 
         <!-- Tamu Management -->
-        <li class="nav-item {{ str_starts_with($currentRoute, 'admin.tamu') ? 'active' : '' }}">
+        {{-- <li class="nav-item {{ str_starts_with($currentRoute, 'admin.tamu') ? 'active' : '' }}">
           <a class="nav-link" data-bs-toggle="collapse" href="#tamu-management" 
              aria-expanded="{{ str_starts_with($currentRoute, 'admin.tamu') ? 'true' : 'false' }}" 
              aria-controls="tamu-management">
@@ -67,7 +67,7 @@
               </li>
             </ul>
           </div>
-        </li>
+        </li> --}}
       @endif
 
       {{-- PEGAWAI MENU (role_id = 2) --}}
@@ -118,25 +118,25 @@
                   Daftar Tamu
                 </a>
               </li>
-              <li class="nav-item">
+              {{-- <li class="nav-item">
                 <a class="nav-link {{ $currentRoute == 'security.create' ? 'active' : '' }}" 
                    href="{{ route('security.create') }}">
                   <i class="mdi mdi-plus-circle"></i>
                   Tambah Tamu
                 </a>
-              </li>
+              </li> --}}
             </ul>
           </div>
         </li>
 
         <!-- Check In/Out Actions -->
-        <li class="nav-item nav-category">Actions</li>
+        {{-- <li class="nav-item nav-category">Actions</li>
         <li class="nav-item">
           <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#checkinModal">
             <i class="mdi mdi-login menu-icon text-success"></i>
             <span class="menu-title">Check In Tamu</span>
           </a>
-        </li>
+        </li> --}}
       @endif
 
       {{-- MENU UMUM UNTUK SEMUA USER YANG LOGIN --}}
@@ -144,7 +144,7 @@
       
       <!-- Profile/Settings -->
       <li class="nav-item">
-        <a class="nav-link" href="#" onclick="event.preventDefault(); alert('Profile page belum tersedia');">
+        <a class="nav-link" href="{{ route('profile.index') }}" >
           <i class="mdi mdi-account menu-icon"></i>
           <span class="menu-title">Profile</span>
         </a>

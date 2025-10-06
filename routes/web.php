@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Models\JenisIdentitas;
+use App\Http\Controllers\ProfileController;
 
 // Root route - cek status auth
 Route::get('/', function () {
@@ -123,6 +124,16 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [SecurityController::class, 'delete'])->name('delete');
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
+    });
+
+
+    // try profile page
+
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     });
 
 });
