@@ -48,7 +48,7 @@
         </li>
 
         <!-- Tamu Management -->
-        <li class="nav-item {{ str_starts_with($currentRoute, 'admin.tamu') ? 'active' : '' }}">
+        {{-- <li class="nav-item {{ str_starts_with($currentRoute, 'admin.tamu') ? 'active' : '' }}">
           <a class="nav-link" data-bs-toggle="collapse" href="#tamu-management" 
              aria-expanded="{{ str_starts_with($currentRoute, 'admin.tamu') ? 'true' : 'false' }}" 
              aria-controls="tamu-management">
@@ -67,7 +67,7 @@
               </li>
             </ul>
           </div>
-        </li>
+        </li> --}}
       @endif
 
       {{-- PEGAWAI MENU (role_id = 2) --}}

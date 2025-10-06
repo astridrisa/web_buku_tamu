@@ -217,11 +217,11 @@
                                         <i class="mdi mdi-account-group"></i> Manage Users
                                     </a>
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                {{-- <div class="col-md-3 mb-3">
                                     <a href="{{ route('admin.tamu.index') }}" class="btn btn-success btn-lg btn-block">
                                         <i class="mdi mdi-account-multiple"></i> Manage Tamu
                                     </a>
-                                </div>
+                                </div> --}}
                                 {{-- <div class="col-md-3 mb-3">
                                     <a href="{{ route('security.index') }}" class="btn btn-warning btn-lg btn-block">
                                         <i class="mdi mdi-shield-account"></i> Security Panel
