@@ -44,6 +44,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $tamus = $tamus->sortByDesc('created_at');
+                        @endphp
                         @forelse($tamus as $tamu)
                             <tr>
                                 <td></td>
@@ -75,8 +78,9 @@
                                                 <i class="mdi mdi-logout"></i>
                                             </button>
                                         @endif
-                                        
-                                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+
+                                        <button type="button"
+                                            class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
                                             data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="mdi mdi-dots-vertical"></i>
                                         </button>
@@ -98,8 +102,7 @@
                                             </li>
                                             <li>
                                                 <button type="button" class="dropdown-item text-danger btn-delete"
-                                                    data-id="{{ $tamu->id }}"
-                                                    data-name="{{ $tamu->nama }}">
+                                                    data-id="{{ $tamu->id }}" data-name="{{ $tamu->nama }}">
                                                     <i class="mdi mdi-delete me-2"></i>
                                                     Hapus
                                                 </button>
@@ -134,121 +137,118 @@
         <script>
             $(document).ready(function () {
                 // Inisialisasi DataTable
-                $('#recentGuestsTable').DataTable({
-                    pageLength: 10,
-                    order: [[6, 'asc']],
-                    responsive: true,
-                    dom: '<"d-flex justify-content-between align-items-end mb-3 flex-wrap"<"d-flex gap-3"f><"d-flex gap-2"B>>rtip',
-                    buttons: [
-                        {
-                            text: '<i class="mdi mdi-filter me-1"></i> Filter',
-                            className: 'btn btn-primary btn-sm',
-                            action: function () {
-                                $('#statusFilter').trigger('change');
-                            }
-                        },
-                        {
-                            text: '<i class="mdi mdi-refresh me-1"></i> Reset',
-                            className: 'btn btn-outline-secondary btn-sm',
-                            action: function (e, dt) {
-                                dt.search('').columns().search('').draw();
-                                $('#statusFilter').val('');
-                            }
-                        }
-                    ],
-                    columnDefs: [
-                        {
-                            targets: 0,
-                            orderable: false,
-                            searchable: false,
-                            render: function (data, type, row, meta) {
-                                return meta.row + meta.settings._iDisplayStart + 1;
-                            }
-                        },
-                        {
-                            targets: 5, // kolom status
-                            render: function (data, type, row) {
-                                if (type === 'filter') {
-                                    // Ambil data-status dari span badge
-                                    return $(data).attr('data-status');
+                $(document).ready(function () {
+                    $('#recentGuestsTable').DataTable({
+                        pageLength: 10,
+                        ordering: false, // ⛔️ Hilangkan tombol sort asc/desc di header
+                        responsive: true,
+                        dom: '<"d-flex justify-content-between align-items-end mb-3 flex-wrap"<"d-flex gap-3"f><"d-flex gap-2"B>>rtip',
+                        buttons: [
+                            {
+                                text: '<i class="mdi mdi-filter me-1"></i> Filter',
+                                className: 'btn btn-primary btn-sm',
+                                action: function () {
+                                    $('#statusFilter').trigger('change');
                                 }
-                                return data;
+                            },
+                            {
+                                text: '<i class="mdi mdi-refresh me-1"></i> Reset',
+                                className: 'btn btn-outline-secondary btn-sm',
+                                action: function (e, dt) {
+                                    dt.search('').columns().search('').draw();
+                                    $('#statusFilter').val('');
+                                }
                             }
-                        }
-
-                        
-                    ],
-                    initComplete: function () {
-                        var api = this.api();
-
-                        var $search = $('#recentGuestsTable_filter input')
-                            .attr('placeholder', '...')
-                            .addClass('form-control');
-                        $('#recentGuestsTable_filter label').contents().filter(function () {
-                            return this.nodeType === 3;
-                        }).remove();
-
-                        $('#recentGuestsTable_filter').addClass('form-group mb-0 me-3');
-                        $('#recentGuestsTable_filter').prepend('<label class="form-label d-block"><i class="mdi mdi-account-search"></i> Cari Tamu</label>');
-
-                        $search.wrap('<div class="input-group"></div>');
-                        $search.after('<button class="btn btn-outline-primary" type="button"><i class="mdi mdi-magnify"></i></button>');
-
-                        var filterHtml = $(
-                            '<div class="d-flex align-items-end mb-3">' +
-                            '  <div class="form-group mb-0 me-4" style="min-width: 200px;">' +
-                            '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
-                            '    <select id="statusFilter" class="form-select">' +
-                            '      <option value="">Semua Status</option>' +
-                            '      <option value="belum_checkin">Belum Checkin</option>' +
-                            '      <option value="checkin">Checkin</option>' +
-                            '      <option value="approved">Approved</option>' +
-                            // '      <option value="rejected">Rejected</option>' +
-                            '      <option value="checked_out">Checked Out</option>' +
-                            '    </select>' +
-                            '  </div>' +
-                            '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
-                            '    <i class="mdi mdi-refresh"></i> Refresh' +
-                            '  </button>' +
-                            '</div>'
-                        );
-
-                        $('#recentGuestsTable_filter').after(filterHtml);
-
-                        // Event filter menggunakan data-status attribute
-                        $('#statusFilter').on('change', function () {
-                            var val = $(this).val();
-
-                            if (val === '') {
-                                api.column(5).search('').draw();
-                            } else {
-                                api.column(5).search('').draw(); // reset dulu
-
-                                api.column(5).nodes().each(function (cell, i) {
-                                    var status = $(cell).find('span').data('status');
-                                    if (status !== val) {
-                                        api.row(i).nodes().to$().hide(); 
-                                    } else {
-                                        api.row(i).nodes().to$().show();
+                        ],
+                        columnDefs: [
+                            {
+                                targets: 0,
+                                orderable: false,
+                                searchable: false,
+                                render: function (data, type, row, meta) {
+                                    return meta.row + meta.settings._iDisplayStart + 1;
+                                }
+                            },
+                            {
+                                targets: 5, // kolom status
+                                render: function (data, type, row) {
+                                    if (type === 'filter') {
+                                        return $(data).attr('data-status');
                                     }
-                                });
+                                    return data;
+                                }
                             }
-                        });
+                        ],
+                        initComplete: function () {
+                            var api = this.api();
 
-                    },
-                    language: {
-                        search: "",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                        infoEmpty: "Tidak ada data tersedia",
-                        zeroRecords: "Data tidak ditemukan",
-                        paginate: {
-                            first: "Awal",
-                            last: "Akhir",
-                            next: "›",
-                            previous: "‹"
+                            var $search = $('#recentGuestsTable_filter input')
+                                .attr('placeholder', '...')
+                                .addClass('form-control');
+                            $('#recentGuestsTable_filter label').contents().filter(function () {
+                                return this.nodeType === 3;
+                            }).remove();
+
+                            $('#recentGuestsTable_filter').addClass('form-group mb-0 me-3');
+                            $('#recentGuestsTable_filter').prepend('<label class="form-label d-block"><i class="mdi mdi-account-search"></i> Cari Tamu</label>');
+
+                            $search.wrap('<div class="input-group"></div>');
+                            $search.after('<button class="btn btn-outline-primary" type="button"><i class="mdi mdi-magnify"></i></button>');
+
+                            var filterHtml = $(
+                                '<div class="d-flex align-items-end mb-3">' +
+                                '  <div class="form-group mb-0 me-4" style="min-width: 200px;">' +
+                                '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
+                                '    <select id="statusFilter" class="form-select">' +
+                                '      <option value="">Semua Status</option>' +
+                                '      <option value="belum_checkin">Belum Checkin</option>' +
+                                '      <option value="checkin">Checkin</option>' +
+                                '      <option value="approved">Approved</option>' +
+                                '      <option value="checked_out">Checked Out</option>' +
+                                '    </select>' +
+                                '  </div>' +
+                                '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
+                                '    <i class="mdi mdi-refresh"></i> Refresh' +
+                                '  </button>' +
+                                '</div>'
+                            );
+
+                            $('#recentGuestsTable_filter').after(filterHtml);
+
+                            $('#statusFilter').on('change', function () {
+                                var val = $(this).val();
+
+                                if (val === '') {
+                                    api.column(5).search('').draw();
+                                } else {
+                                    api.column(5).search('').draw(); // reset dulu
+
+                                    api.column(5).nodes().each(function (cell, i) {
+                                        var status = $(cell).find('span').data('status');
+                                        if (status !== val) {
+                                            api.row(i).nodes().to$().hide();
+                                        } else {
+                                            api.row(i).nodes().to$().show();
+                                        }
+                                    });
+                                }
+                            });
+                        },
+                        language: {
+                            search: "",
+                            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                            infoEmpty: "Tidak ada data tersedia",
+                            zeroRecords: "Data tidak ditemukan",
+                            paginate: {
+                                first: "Awal",
+                                last: "Akhir",
+                                next: "›",
+                                previous: "‹"
+                            }
                         }
-                    }
+                    });
                 });
+
 
                 // ===== HANDLER DELETE - INI YANG KURANG =====
                 $(document).on('click', '.btn-delete', function () {
@@ -364,10 +364,10 @@
                 // Fungsi alert
                 function showAlert(type, message) {
                     const alertHtml = `
-                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>`;
+                                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                            ${message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>`;
                     $('main').prepend(alertHtml);
                     setTimeout(() => $('.alert').fadeOut(), 5000);
                 }
@@ -375,15 +375,15 @@
                 // Fungsi QR Code
                 function showQrCode(qrUrl, tamuName) {
                     const qrContent = `
-                        <div id="printArea">
-                            <h5>${tamuName}</h5>
-                            <div class="mb-3">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                                     alt="QR Code" class="img-fluid">
-                            </div>
-                            <p class="small">Tunjukkan QR Code ini ke pegawai</p>
-                            <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
-                        </div>`;
+                                        <div id="printArea">
+                                            <h5>${tamuName}</h5>
+                                            <div class="mb-3">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+                                                     alt="QR Code" class="img-fluid">
+                                            </div>
+                                            <p class="small">Tunjukkan QR Code ini ke pegawai</p>
+                                            <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
+                                        </div>`;
                     $('#qrContent').html(qrContent);
                     $('#qrModal').modal('show');
                 }

@@ -73,6 +73,7 @@ class PegawaiController extends BaseController
 
             
             Log::info('DEBUG AUTH:', [
+           
                 'id' => auth()->id(),
                 'user' => auth()->user(),
             ]);
