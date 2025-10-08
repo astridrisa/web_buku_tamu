@@ -143,7 +143,7 @@
       <li class="nav-item nav-category">General</li>
       
       <!-- Profile/Settings -->
-      <li class="nav-item">
+      <li class="nav-item {{ request()->routeIs('profile*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('profile.index') }}" >
           <i class="mdi mdi-account menu-icon"></i>
           <span class="menu-title">Profile</span>

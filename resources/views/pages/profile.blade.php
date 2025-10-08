@@ -88,7 +88,7 @@
                 </div>
 
                 {{-- Card Hapus Akun --}}
-                <div class="card shadow-sm border-0 mt-5">
+                {{-- <div class="card shadow-sm border-0 mt-5">
                     <h5 class="card-header bg-white fw-semibold">Hapus Akun</h5>
                     <div class="card-body">
                         <div class="alert alert-warning mb-4">
@@ -97,10 +97,12 @@
                                 keputusan Anda.</p>
                         </div>
 
-                        <form id="formAccountDeactivation" onsubmit="return false">
+                        <form id="formAccountDeactivation" method="POST" action="{{ route('profile.destroy') }}">
+                            @csrf
+                            @method('DELETE')
+
                             <div class="form-check mb-3">
-                                <input class="form-check-input ms-1" type="checkbox" name="accountActivation"
-                                    id="accountActivation" />
+                                <input class="form-check-input ms-1" type="checkbox" id="accountActivation" />
                                 <label class="form-check-label" for="accountActivation">
                                     Saya yakin ingin menonaktifkan akun saya
                                 </label>
@@ -109,9 +111,8 @@
                                 Nonaktifkan Akun
                             </button>
                         </form>
-
                     </div>
-                </div>
+                </div> --}}
 
             </div>
         </div>
@@ -120,22 +121,30 @@
 
 
 @push('scripts')
-<script>
-    const uploadInput = document.getElementById('upload');
-    const preview = document.getElementById('uploadedAvatar');
-    const resetBtn = document.getElementById('resetImage');
-    const defaultAvatar = "{{ asset('assets/images/user.jpg') }}";
+    <script>
+        const uploadInput = document.getElementById('upload');
+        const preview = document.getElementById('uploadedAvatar');
+        const resetBtn = document.getElementById('resetImage');
+        const defaultAvatar = "{{ asset('assets/images/user.jpg') }}";
 
-    uploadInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if(file) {
-            preview.src = URL.createObjectURL(file);
-        }
-    });
+        uploadInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+            }
+        });
 
-    resetBtn.addEventListener('click', () => {
-        uploadInput.value = '';
-        preview.src = defaultAvatar;
-    });
-</script>
+        resetBtn.addEventListener('click', () => {
+            uploadInput.value = '';
+            preview.src = defaultAvatar;
+        });
+
+
+        // hapus akun
+        // const checkbox = document.getElementById('accountActivation');
+        // const btn = document.getElementById('deactivateBtn');
+        // checkbox.addEventListener('change', () => {
+        //     btn.disabled = !checkbox.checked;
+        // });
+    </script>
 @endpush
