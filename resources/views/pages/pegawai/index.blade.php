@@ -121,7 +121,7 @@
                 $('#recentGuestsTable').DataTable({
                     pageLength: 10,
                     // order: [[6, 'asc']],
-                    ordering: false,
+                    ordering: true,
                     responsive: true,
                     dom: '<"d-flex justify-content-between align-items-end mb-3 flex-wrap"<"d-flex gap-3"f><"d-flex gap-2"B>>rtip',
                     buttons: [
@@ -146,9 +146,9 @@
                             targets: 0,
                             orderable: false,
                             searchable: false,
-                            render: function (data, type, row, meta) {
-                                return meta.row + meta.settings._iDisplayStart + 1;
-                            }
+                            // render: function (data, type, row, meta) {
+                            //     return meta.row + meta.settings._iDisplayStart + 1;
+                            // }
                         },
                         {
                             targets: 5, // kolom status
@@ -161,6 +161,17 @@
                             }
                         }
                     ],
+
+                    drawCallback: function() {
+                            var api = this.api();
+                            var startIndex = api.page.info().start;
+                            
+                            api.column(0, {page: 'current'}).nodes().each(function(cell, i) {
+                                cell.innerHTML = startIndex + i + 1;
+                            });
+                    },
+
+                    
                     initComplete: function () {
                         var api = this.api();
 
