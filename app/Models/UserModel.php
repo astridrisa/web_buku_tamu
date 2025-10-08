@@ -27,6 +27,7 @@ class UserModel extends Authenticatable
         'email',
         'password',
         'role_id',
+        'profile_photo',
     ];
 
     /**

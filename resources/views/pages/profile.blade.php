@@ -13,94 +13,33 @@
                         <h4 class="card-title mb-3 fw-semibold">Profil Akun</h4>
                         <p class="text-muted mb-4">Perbarui informasi dan foto profilmu di sini.</p>
 
-                        <div class="d-flex align-items-start align-items-sm-center gap-4 mb-4">
-                            <img src="{{ asset('assets/images/faces/face6.jpg') }}" alt="user-avatar"
-                                class="d-block rounded shadow-sm" style="width: 100px; height: 100px; object-fit: cover;"
-                                id="uploadedAvatar" />
-
-                            <div class="button-wrapper">
-                                <label for="upload" class="btn btn-warning me-2 mb-2" tabindex="0">
-                                    <span>Unggah Foto Baru</span>
-                                    <input type="file" id="upload" class="account-file-input" hidden
-                                        accept="image/png, image/jpeg" />
-                                </label>
-                                <button type="button" class="btn btn-outline-secondary account-image-reset mb-2">
-                                    Reset
-                                </button>
-                                <div class="text-muted small mt-1">Format: JPG, GIF, atau PNG (maks. 800KB)</div>
-                            </div>
-                        </div>
-
-                        <form id="formAccountSettings" method="POST" action="{{ route('profile.update') }}">
+                        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
-                            <div class="mb-3">
-                                <label for="name" class="form-label fw-medium">Nama</label>
-                                <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $user->name) }}" required>
+                            <div class="d-flex align-items-center gap-4 mb-4">
+                                <img src="{{ $user->profile_photo ? asset($user->profile_photo) : asset('assets/images/user.jpg') }}"
+                                    alt="Avatar" id="uploadedAvatar"
+                                    style="width:100px;height:100px;object-fit:cover;border-radius:8px;">
+
+                                <div>
+                                    <label class="btn btn-warning">
+                                        Unggah Foto Baru
+                                        <input type="file" name="profile_photo" id="upload" hidden
+                                            accept="image/png, image/jpeg">
+                                    </label>
+                                    <button type="button" class="btn btn-outline-secondary" id="resetImage">Reset</button>
+                                    <p class="text-muted small mt-1">Format: JPG, GIF, atau PNG (Max 2MB)</p>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label fw-medium">E-mail</label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                    value="{{ old('email', $user->email) }}" required>
-                            </div>
+                            <input type="text" name="name" value="{{ old('name', $user->name) }}" required
+                                class="form-control mb-3">
+                            <input type="email" name="email" value="{{ old('email', $user->email) }}" required
+                                class="form-control mb-3">
 
-                            <!-- Tombol Ubah Password (di bawah input email) -->
-                        <div class="mb-4">
-        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#ubahPasswordModal">
-            Ubah Password
-        </button>
-    </div>
-
-                            <!-- Tombol Simpan & Batal (rata kanan) -->
-                            <div class="d-flex justify-content-end gap-2">
-                                <button type="reset" class="btn btn-outline-secondary">Batal</button>
-                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                            </div>
+                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         </form>
-
-                        <!-- Modal Ubah Password -->
-                        <div class="modal fade" id="ubahPasswordModal" tabindex="-1"
-                            aria-labelledby="ubahPasswordModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <form method="POST" action="{{ route('profile.updatePassword') }}">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="ubahPasswordModalLabel">Ubah Password</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label for="current_password" class="form-label">Password Lama</label>
-                                                <input type="password" name="current_password" id="current_password"
-                                                    class="form-control" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="new_password" class="form-label">Password Baru</label>
-                                                <input type="password" name="new_password" id="new_password"
-                                                    class="form-control" required minlength="6">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="new_password_confirmation" class="form-label">Konfirmasi
-                                                    Password Baru</label>
-                                                <input type="password" name="new_password_confirmation"
-                                                    id="new_password_confirmation" class="form-control" required
-                                                    minlength="6">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-secondary"
-                                                data-bs-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary">Simpan Password</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
 
 
                         <!-- Modal Ubah Password -->
@@ -179,15 +118,24 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const checkbox = document.getElementById('accountActivation');
-            const button = document.getElementById('deactivateBtn');
 
-            checkbox.addEventListener('change', function () {
-                button.disabled = !checkbox.checked;
-            });
-        });
-    </script>
+@push('scripts')
+<script>
+    const uploadInput = document.getElementById('upload');
+    const preview = document.getElementById('uploadedAvatar');
+    const resetBtn = document.getElementById('resetImage');
+    const defaultAvatar = "{{ asset('assets/images/user.jpg') }}";
+
+    uploadInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if(file) {
+            preview.src = URL.createObjectURL(file);
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        uploadInput.value = '';
+        preview.src = defaultAvatar;
+    });
+</script>
 @endpush
