@@ -162,12 +162,12 @@
      <li class="nav-item dropdown d-none d-lg-block user-dropdown">
       <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
         {{-- <i class="mdi mdi-account-circle text-white" style="font-size: 45px;"></i> --}}
-        <img class="img-xs rounded-circle" src="{{ $user->profile_photo ? asset($user->profile_photo) : asset('assets/images/user.jpg') }}" alt="Profile image">
+        <img class="img-xs rounded-circle" src="{{ Auth::user()?->profile_photo ? asset(Auth::user()->profile_photo) : asset('assets/images/user.jpg') }}" alt="Profile image">
       </a>
       <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
         <div class="dropdown-header text-center">
           {{-- <i class="mdi mdi-account-circle text-primary" style="font-size: 64px;"></i> --}}
-          <img class="img-xs rounded-circle" src="{{ $user->profile_photo ? asset($user->profile_photo) : asset('assets/images/user.jpg') }}" alt="Profile image">
+          <img class="img-xs rounded-circle" src="{{ Auth::user()?->profile_photo ? asset(Auth::user()->profile_photo) : asset('assets/images/user.jpg') }}" alt="Profile image">
           <p class="mb-1 mt-3 font-weight-semibold">{{ Auth::user()->name }}</p>
           <p class="fw-light text-muted mb-0">{{ Auth::user()->email }}</p>
         </div>
