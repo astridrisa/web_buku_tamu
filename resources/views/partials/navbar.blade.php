@@ -171,10 +171,10 @@
           <p class="mb-1 mt-3 font-weight-semibold">{{ Auth::user()->name }}</p>
           <p class="fw-light text-muted mb-0">{{ Auth::user()->email }}</p>
         </div>
-        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-        {{-- <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages</a>
-        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
-        <a class="dropdown-item" href="#"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i> FAQ</a> --}}
+        <a class="dropdown-item" href="{{ route('profile.index') }}">
+          <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i>
+          My Profile
+        </a>
 
         <!-- Logout -->
         <form method="POST" action="{{ route('logout') }}">
