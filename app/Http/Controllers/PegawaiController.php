@@ -52,7 +52,56 @@ class PegawaiController extends BaseController
         $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
-        return view('pages.pegawai.tamu.detail', compact('tamu'));
+        return view('pages.pegawai.show', compact('tamu'));
+    }
+
+    public function edit($id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+        $jenisIdentitas = JenisIdentitasModel::all();
+        
+        return view('pages.tamu.edit', compact('tamu', 'jenisIdentitas'));
+    }
+
+    // Update tamu
+    public function update(Request $request, $id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'alamat' => 'required|string',
+            'no_telepon' => 'required|string|max:20',
+            'tujuan' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'jumlah_rombongan' => 'nullable|integer|min:1',
+            'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+        ]);
+
+        $tamu->update($validated);
+
+        return redirect()->route('pegawai.list')
+            ->with('success', 'Data tamu berhasil diperbarui');
+    }
+
+    // Hapus tamu
+    public function delete($id)
+    {
+        try {
+            $tamu = TamuModel::findOrFail($id);
+            $tamu->delete();
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Tamu berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting tamu: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
+            ], 500);
+        }
     }
 
     // Approve tamu yang sudah checkin
