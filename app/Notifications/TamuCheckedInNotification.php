@@ -33,7 +33,7 @@ class TamuCheckedInNotification extends Notification
             'tamu_email' => $this->tamu->email,
             'tamu_tujuan' => $this->tamu->tujuan,
             'icon' => 'mdi-login',
-            'action_url' => route('pegawai.tamu.approve', $this->tamu->id),
+            'action_url' => route('pegawai.show', $this->tamu->id),
         ];
     }
 

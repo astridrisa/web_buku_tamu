@@ -111,10 +111,9 @@ class PegawaiController extends BaseController
             // cek dulu apakah datanya ketemu
             $tamu = TamuModel::find($id);
             if (!$tamu) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tamu tidak ditemukan',
-                ], 404);
+            return redirect()
+                ->route('pegawai.approval')
+                ->with('error', 'Data tamu tidak ditemukan');
             }
 
             // debug: cek data tamu sebelum update
@@ -141,17 +140,14 @@ class PegawaiController extends BaseController
             Log::info('Update result:', [$update]);
             Log::info('After update:', $tamu->fresh()->toArray());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Tamu approved successfully',
-                'data' => $tamu->fresh()
-            ]);
+             return redirect()
+            ->route('pegawai.approval')
+            ->with('success', "Kunjungan tamu {$tamu->nama} telah disetujui.");
         } catch (\Exception $e) {
             Log::error('Approve Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return redirect()
+                ->route('pegawai.approval')
+                ->with('error', 'Terjadi kesalahan saat menyetujui tamu.');
         }
     }
 

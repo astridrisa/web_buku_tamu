@@ -106,7 +106,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/edit', [PegawaiController::class, 'edit'])->name('edit');
         Route::put('/{id}', [PegawaiController::class, 'update'])->name('update');
         Route::delete('/{id}', [PegawaiController::class, 'delete'])->name('delete');
-        Route::post('/{id}/approve', [PegawaiController::class, 'approve'])->name('tamu.approve');
+        // Route::post('/{id}/approve', [PegawaiController::class, 'approve'])->name('tamu.approve');
     
        
     });
