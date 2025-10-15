@@ -92,7 +92,9 @@ class SecurityController extends Controller
 
         $data = $validator->validated();
         $data['status'] = 'belum_checkin';
-        $data['qr_code'] = \Illuminate\Support\Str::uuid();
+        // $data['qr_code'] = \Illuminate\Support\Str::uuid();
+        $tamu = TamuModel::create($data);
+        $tamu->update(['qr_code' => $tamu->id]);
 
         TamuModel::create($data);
 
@@ -173,17 +175,16 @@ class SecurityController extends Controller
         // Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
 
         try {
-            // GENERATE QR CODE
+            // 🧹 Hapus QR code lama dulu (biar yang lama gak kepakai lagi)
+            $this->qrCodeService->deleteOldQrCodes($tamu->id);
+
+            // 🆕 Generate QR Code baru (arah ke /login/qr/{id})
             $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
             Log::info("QR Code generated at: {$qrCodePath}");
 
-            // KIRIM EMAIL KE TAMU
+            // 📧 Kirim email ke tamu dengan QR baru
             Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
             Log::info("Email sent to: {$tamu->email}");
-
-            // Hapus QR code lama untuk hemat storage (optional)
-            // $this->qrCodeService->deleteOldQrCodes($tamu->id);
-
         } catch (\Exception $e) {
             Log::error("Error sending email: " . $e->getMessage());
             // Tidak return error, karena checkin sudah berhasil
@@ -200,7 +201,7 @@ class SecurityController extends Controller
         return response()->json([
             'success' => true, 
             'message' => 'Tamu berhasil di-checkin',
-            'qr_code' => route('tamu.qr.show', $tamu->qr_code)
+            'qr_code' => url("/login/qr/{$tamu->id}")
         ]);
     }
 
