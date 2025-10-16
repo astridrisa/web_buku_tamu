@@ -15,6 +15,23 @@
                 </h5>
             </div>
             <div class="card-body">
+                <!-- Foto Tamu -->
+                <div class="text-center mb-4">
+                    <div class="tamu-photo-display">
+                        @if($tamu->foto)
+                            <img src="{{ asset('storage/' . $tamu->foto) }}" alt="{{ $tamu->nama }}">
+                        @else
+                            <div class="no-photo">
+                                <i class="mdi mdi-account-circle"></i>
+                            </div>
+                        @endif
+                    </div>
+                    {{-- <h4 class="mt-3 mb-1">{{ $tamu->nama }}</h4>
+                    <p class="text-muted">{{ $tamu->email }}</p> --}}
+                </div>
+
+                <hr>
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -55,6 +72,13 @@
                             <h6>
                                 <i class="mdi mdi-account-multiple me-1"></i>
                                 {{ $tamu->jumlah_rombongan ?? 1 }} Orang
+                            </h6>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">Pegawai yang Dituju</label>
+                            <h6>
+                                <i class="mdi mdi-account-tie me-1"></i>
+                                {{ $tamu->nama_pegawai }}
                             </h6>
                         </div>
                         <div class="mb-3">
@@ -322,6 +346,33 @@ function downloadQR() {
     border: none;
     border-radius: 8px;
 }
+
+.tamu-photo-display {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 4px solid #17a2b8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.tamu-photo-display img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.tamu-photo-display .no-photo {
+    font-size: 120px;
+    color: #dee2e6;
+}
+
 
 .timeline {
     position: relative;

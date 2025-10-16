@@ -49,9 +49,11 @@ class TamuController extends Controller
                 'alamat' => 'required|string',
                 'no_telepon' => 'required|string|max:20',
                 'tujuan' => 'required|string|max:255',
+                'nama_pegawai' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
                 'jumlah_rombongan' => 'nullable|integer|min:1',
                 'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Max 2MB
             ]);
 
             // Jika validasi gagal, return error 422
@@ -70,6 +72,16 @@ class TamuController extends Controller
             // Set default value jika tidak ada
             if (!isset($validated['jumlah_rombongan'])) {
                 $validated['jumlah_rombongan'] = 1;
+            }
+
+            // Handle upload foto
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+                $filename = time() . '_' . Str::slug($validated['nama']) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('tamu_photos', $filename, 'public');
+                $validated['foto'] = $path;
+                
+                Log::info('Photo uploaded: ' . $path);
             }
 
             Log::info('Validated data:', $validated);

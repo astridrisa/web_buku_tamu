@@ -13,6 +13,8 @@ use App\Mail\TamuQrCodeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller;
@@ -85,14 +87,38 @@ class SecurityController extends Controller
             'alamat' => 'required|string',
             'no_telepon' => 'required|string|max:20',
             'tujuan' => 'required|string|max:255',
+            'nama_pegawai' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'jumlah_rombongan' => 'nullable|integer|min:1',
             'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
+        if ($validator->fails()) {
+                Log::error('Validation errors:', $validator->errors()->toArray());
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+        }
+
         $data = $validator->validated();
+
+        // Handle upload foto
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = time() . '_' . Str::slug($data['nama']) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('tamu_photos', $filename, 'public');
+            $data['foto'] = $path;
+            
+            Log::info('Photo uploaded successfully: ' . $path);
+        }
+    
         $data['status'] = 'belum_checkin';
         $data['qr_code'] = \Illuminate\Support\Str::uuid();
+
+        if (!isset($data['jumlah_rombongan'])) {
+                $data['jumlah_rombongan'] = 1;
+            }
 
         TamuModel::create($data);
 
@@ -120,10 +146,25 @@ class SecurityController extends Controller
             'alamat' => 'required|string',
             'no_telepon' => 'required|string|max:20',
             'tujuan' => 'required|string|max:255',
+            'nama_pegawai' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'jumlah_rombongan' => 'nullable|integer|min:1',
             'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+         // Handle upload foto baru
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($tamu->foto) {
+                Storage::disk('public')->delete($tamu->foto);
+            }
+            
+            $file = $request->file('foto');
+            $filename = time() . '_' . Str::slug($validated['nama']) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('tamu_photos', $filename, 'public');
+            $validated['foto'] = $path;
+        }
 
         $tamu->update($validated);
 

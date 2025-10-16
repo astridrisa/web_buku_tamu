@@ -195,6 +195,66 @@
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
         }
+
+         /* Photo Upload Styling */
+        .photo-upload-container {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px dashed #e9ecef;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-upload-container:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .photo-preview {
+            width: 300px;
+            height: 200px;
+            margin: 0 auto 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .photo-preview i {
+            font-size: 60px;
+            color: #ccc;
+        }
+        
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-file-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        #foto {
+            display: none;
+        }
         
         .btn-submit {
             background: linear-gradient(45deg, #667eea, #764ba2);
@@ -292,8 +352,20 @@
             </div>
             
             <div class="card-body">
-                <form id="registrationForm" method="POST" action="{{ route('tamu.store') }}">
+                <form id="registrationForm" method="POST" action="{{ route('tamu.store') }}" enctype="multipart/form-data">
                     @csrf
+
+                    <!-- Photo Upload -->
+                    <div class="photo-upload-container">
+                        <div class="photo-preview" id="photoPreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <label for="foto" class="custom-file-upload">
+                            <i class="fas fa-camera me-2"></i>Upload Foto
+                        </label>
+                        <input type="file" id="foto" name="foto" accept="image/*">
+                        <p class="text-muted small mt-2 mb-0">Format: JPG, PNG (Max 2MB)</p>
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -336,6 +408,12 @@
                         <input type="text" class="form-control" id="tujuan" name="tujuan" placeholder="Tujuan Kunjungan" required>
                         <label for="tujuan"><i class="fas fa-bullseye me-2"></i>Tujuan Kunjungan</label>
                     </div>
+
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="nama_pegawai" name="nama_pegawai" placeholder="Nama Pegawai yang Dituju" required>
+                        <label for="nama_pegawai"><i class="fas fa-user-tie me-2"></i>Nama Pegawai yang Dituju</label>
+                    </div>
+                    
                     
                     <div class="form-floating">
                         <select class="form-select" id="jenis_identitas_id" name="jenis_identitas_id" required>
@@ -387,72 +465,96 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-            
-            $('#registrationForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                // Show loading state
-                const submitBtn = $('.btn-submit');
-                const submitText = $('.submit-text');
-                const loadingText = $('.loading');
-                
-                submitBtn.prop('disabled', true);
-                submitText.hide();
-                loadingText.show();
-                
-                // Hide previous messages
-                $('#successMessage, #errorMessage').hide();
-                $('.form-control, .form-select').removeClass('is-invalid');
-                $('.invalid-feedback').remove();
-                
-                // Submit form
-                $.ajax({
-                    url: $(this).attr('action'),
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.success) {
-                            $('#successMessage').fadeIn();
-                            $('#registrationForm')[0].reset();
-                            
-                            // Auto reset form after 5 seconds
-                            setTimeout(function() {
-                                $('#successMessage').fadeOut();
-                            }, 10000);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'Terjadi kesalahan saat mendaftar.';
-                        
-                        if (xhr.status === 422) {
-                            const errors = xhr.responseJSON.errors;
-                            let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
-                            
-                            $.each(errors, function(field, messages) {
-                                // Add error class to field
-                                $(`#${field}`).addClass('is-invalid');
-                                
-                                // Add error messages
-                                messages.forEach(function(message) {
-                                    errorHtml += `<li>${message}</li>`;
-                                });
-                            });
-                            
-                            errorHtml += '</ul>';
-                            errorMessage = errorHtml;
-                        }
-                        
-                        $('#errorMessage').html(errorMessage).fadeIn();
-                    },
-                    complete: function() {
-                        // Reset button state
-                        submitBtn.prop('disabled', false);
-                        loadingText.hide();
-                        submitText.show();
+
+            // Preview foto
+            $('#foto').on('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validasi ukuran
+                    if (file.size > 2048000) {
+                        alert('Ukuran file terlalu besar. Maksimal 2MB');
+                        $(this).val('');
+                        return;
                     }
-                });
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
             
+            $('#registrationForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = $('.btn-submit');
+            const submitText = $('.submit-text');
+            const loadingText = $('.loading');
+            
+            submitBtn.prop('disabled', true);
+            submitText.hide();
+            loadingText.show();
+            
+            // Hide previous messages
+            $('#successMessage, #errorMessage').hide();
+            $('.form-control, .form-select').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+            
+            // Gunakan FormData untuk mengirim file
+            var formData = new FormData(this);
+            
+            // Submit form
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                processData: false,  // PENTING: Jangan proses data
+                contentType: false,  // PENTING: Jangan set content type
+                success: function(response) {
+                    if (response.success) {
+                        $('#successMessage').fadeIn();
+                        $('#registrationForm')[0].reset();
+                        $('#photoPreview').html('<i class="fas fa-user"></i>'); // Reset preview
+                        
+                        // Auto reset form after 10 seconds
+                        setTimeout(function() {
+                            $('#successMessage').fadeOut();
+                        }, 10000);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan saat mendaftar.';
+                    
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
+                        
+                        $.each(errors, function(field, messages) {
+                            // Add error class to field
+                            $(`#${field}`).addClass('is-invalid');
+                            
+                            // Add error messages
+                            messages.forEach(function(message) {
+                                errorHtml += `<li>${message}</li>`;
+                            });
+                        });
+                        
+                        errorHtml += '</ul>';
+                        errorMessage = errorHtml;
+                    }
+                    
+                    $('#errorMessage').html(errorMessage).fadeIn();
+                },
+                complete: function() {
+                    // Reset button state
+                    submitBtn.prop('disabled', false);
+                    loadingText.hide();
+                    submitText.show();
+                }
+            });
+        });
             // Remove error styling on input change
             $('.form-control, .form-select').on('input change', function() {
                 $(this).removeClass('is-invalid');
