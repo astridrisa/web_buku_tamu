@@ -326,6 +326,149 @@
                 padding: 6px 12px;
             }
         }
+
+       /* Privacy Agreement Styling */
+        .privacy-agreement {
+            background: rgba(102, 126, 234, 0.05);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .privacy-agreement.checked {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .privacy-agreement.error {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.05);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .privacy-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .privacy-header:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .privacy-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        .privacy-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .privacy-toggle i {
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .privacy-toggle i.rotated {
+            transform: rotate(180deg);
+        }
+
+        .privacy-content {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 15px;
+            max-height: 0;
+            overflow: hidden;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #495057;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+        }
+
+        .privacy-content.show {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .privacy-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .privacy-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .privacy-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .privacy-content ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .privacy-content li {
+            margin-bottom: 8px;
+        }
+
+        .privacy-checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .privacy-checkbox-wrapper:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .privacy-checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        cursor: pointer;
+        margin-top: 3px;
+        flex-shrink: 0;
+        accent-color: #667eea;
+    }
+
+    .privacy-checkbox-label {
+        flex: 1;
+        font-size: 0.95rem;
+        color: #495057;
+        line-height: 1.6;
+        cursor: pointer;
+    }
     </style>
 </head>
 <body>
@@ -424,7 +567,55 @@
                         </select>
                         <label for="jenis_identitas_id"><i class="fas fa-id-card me-2"></i>Jenis Identitas</label>
                     </div>
-                    
+
+                    <!-- Privacy Agreement Section -->
+                    <div class="privacy-agreement" id="privacyAgreement">
+                        <!-- Clickable Header -->
+                        <div class="privacy-header" id="privacyHeader" style="cursor: pointer; user-select: none;">
+                            <div class="privacy-title">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Kebijakan Privasi & Keamanan Data</span>
+                            </div>
+                            <div class="privacy-toggle">
+                                <span id="toggleText">Baca Detail</span>
+                                <i class="fas fa-chevron-down" id="toggleIcon"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Collapsible Content -->
+                        <div class="privacy-content" id="privacyContent">
+                            <p><strong>Dengan mendaftar, Anda menyetujui hal-hal berikut:</strong></p>
+                            <ul>
+                                <li><strong>Pengumpulan Data:</strong> Kami mengumpulkan data pribadi Anda (nama, alamat, nomor telepon, email, foto, dan informasi kunjungan) untuk keperluan administrasi dan keamanan.</li>
+                                <li><strong>Penggunaan Data:</strong> Data Anda akan digunakan untuk:
+                                    <ul>
+                                        <li>Verifikasi identitas dan keamanan gedung</li>
+                                        <li>Pencatatan buku tamu digital</li>
+                                        <li>Komunikasi terkait kunjungan Anda</li>
+                                        <li>Keperluan keamanan dan kedaruratan</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Penyimpanan Data:</strong> Data Anda akan disimpan secara aman dalam sistem kami dan hanya dapat diakses oleh petugas yang berwenang.</li>
+                                <li><strong>Keamanan:</strong> Kami berkomitmen untuk menjaga keamanan data Anda dengan standar keamanan yang tinggi.</li>
+                                <li><strong>Hak Anda:</strong> Anda memiliki hak untuk mengakses, memperbaiki, atau menghapus data pribadi Anda dengan menghubungi administrator sistem.</li>
+                            </ul>
+                            <p class="mb-0"><em>Jika Anda tidak menyetujui kebijakan ini, mohon untuk tidak melanjutkan registrasi.</em></p>
+                        </div>
+                        
+                        <!-- Checkbox -->
+                        <div class="privacy-checkbox-wrapper">
+                            <input type="checkbox" id="privacyConsent" name="privacy_consent" required>
+                            <label for="privacyConsent" class="privacy-checkbox-label">
+                                Saya telah membaca dan <strong>menyetujui</strong> kebijakan privasi dan keamanan data di atas, serta memberikan izin untuk penggunaan data pribadi saya dalam sistem buku tamu PJT 1.
+                            </label>
+                        </div>
+                        
+                        <div class="privacy-error" id="privacyError">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            Anda harus menyetujui kebijakan privasi untuk melanjutkan registrasi
+                        </div>
+                    </div>
+                                        
                     <button type="submit" class="btn btn-submit">
                         <span class="submit-text">
                             <i class="fas fa-paper-plane me-2"></i>Daftar Sekarang
@@ -458,35 +649,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        $(document).ready(function() {
-            // CSRF Token setup
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
+    $(document).ready(function() {
+        // CSRF Token setup
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-            // Preview foto
-            $('#foto').on('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Validasi ukuran
-                    if (file.size > 2048000) {
-                        alert('Ukuran file terlalu besar. Maksimal 2MB');
-                        $(this).val('');
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            $('#registrationForm').on('submit', function(e) {
+        // Privacy header toggle (accordion)
+        $('#privacyHeader').on('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            const content = $('#privacyContent');
+            const icon = $('#toggleIcon');
+            const text = $('#toggleText');
+            
+            content.toggleClass('show');
+            icon.toggleClass('rotated');
+            
+            if (content.hasClass('show')) {
+                text.text('Tutup');
+            } else {
+                text.text('Baca Detail');
+            }
+        });
+
+        // Privacy consent checkbox handler
+        $('#privacyConsent').on('change', function() {
+            const privacyAgreement = $('#privacyAgreement');
+            const privacyError = $('#privacyError');
+            
+            if ($(this).is(':checked')) {
+                privacyAgreement.addClass('checked').removeClass('error');
+                privacyError.removeClass('show');
+            } else {
+                privacyAgreement.removeClass('checked');
+            }
+        });
+
+        // Preview foto
+        $('#foto').on('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validasi ukuran
+                if (file.size > 2048000) {
+                    alert('Ukuran file terlalu besar. Maksimal 2MB');
+                    $(this).val('');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        $('#registrationForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Validasi privacy consent
+            if (!$('#privacyConsent').is(':checked')) {
+                $('#privacyAgreement').addClass('error');
+                $('#privacyError').addClass('show');
+                
+                // Scroll ke privacy agreement
+                $('html, body').animate({
+                    scrollTop: $('#privacyAgreement').offset().top - 100
+                }, 500);
+                
+                return false;
+            }
             
             // Show loading state
             const submitBtn = $('.btn-submit');
@@ -501,6 +737,8 @@
             $('#successMessage, #errorMessage').hide();
             $('.form-control, .form-select').removeClass('is-invalid');
             $('.invalid-feedback').remove();
+            $('#privacyAgreement').removeClass('error');
+            $('#privacyError').removeClass('show');
             
             // Gunakan FormData untuk mengirim file
             var formData = new FormData(this);
@@ -510,13 +748,19 @@
                 url: $(this).attr('action'),
                 method: 'POST',
                 data: formData,
-                processData: false,  // PENTING: Jangan proses data
-                contentType: false,  // PENTING: Jangan set content type
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     if (response.success) {
                         $('#successMessage').fadeIn();
                         $('#registrationForm')[0].reset();
-                        $('#photoPreview').html('<i class="fas fa-user"></i>'); // Reset preview
+                        $('#photoPreview').html('<i class="fas fa-user"></i>');
+                        $('#privacyAgreement').removeClass('checked');
+
+                        // Scroll to success message
+                        $('html, body').animate({
+                            scrollTop: $('#successMessage').offset().top - 100
+                        }, 500);
                         
                         // Auto reset form after 10 seconds
                         setTimeout(function() {
@@ -532,10 +776,8 @@
                         let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
                         
                         $.each(errors, function(field, messages) {
-                            // Add error class to field
                             $(`#${field}`).addClass('is-invalid');
                             
-                            // Add error messages
                             messages.forEach(function(message) {
                                 errorHtml += `<li>${message}</li>`;
                             });
@@ -546,6 +788,11 @@
                     }
                     
                     $('#errorMessage').html(errorMessage).fadeIn();
+
+                    // Scroll to error message
+                    $('html, body').animate({
+                        scrollTop: $('#errorMessage').offset().top - 100
+                    }, 500);
                 },
                 complete: function() {
                     // Reset button state
@@ -555,34 +802,24 @@
                 }
             });
         });
-            // Remove error styling on input change
-            $('.form-control, .form-select').on('input change', function() {
-                $(this).removeClass('is-invalid');
-                $(this).siblings('.invalid-feedback').remove();
-            });
-            
-            // Format phone number
-            $('#no_telepon').on('input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length > 0) {
-                    if (value.startsWith('8')) {
-                        value = '0' + value;
-                    }
-                    $(this).val(value);
-                }
-            });
+        
+        // Remove error styling on input change
+        $('.form-control, .form-select').on('input change', function() {
+            $(this).removeClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
         });
         
-        // // Login functions (untuk sementara menggunakan alert, nanti bisa dihubungkan ke halaman login)
-        // function loginSatpam() {
-        //     alert('Login Satpam - Akan diarahkan ke halaman login satpam');
-        //     // Nanti bisa diganti dengan: window.location.href = '/satpam/login';
-        // }
-        
-        // function loginPegawai() {
-        //     alert('Login Pegawai - Akan diarahkan ke halaman login pegawai');
-        //     // Nanti bisa diganti dengan: window.location.href = '/pegawai/login';
-        // }
-    </script>
+        // Format phone number
+        $('#no_telepon').on('input', function() {
+            let value = $(this).val().replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.startsWith('8')) {
+                    value = '0' + value;
+                }
+                $(this).val(value);
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -54,6 +54,10 @@ class TamuController extends Controller
                 'jumlah_rombongan' => 'nullable|integer|min:1',
                 'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
                 'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Max 2MB
+                'privacy_consent' => 'required|accepted', // Validasi privacy consent
+            ], [
+                'privacy_consent.required' => 'Anda harus menyetujui kebijakan privasi dan keamanan data untuk melanjutkan registrasi.',
+                'privacy_consent.accepted' => 'Anda harus menyetujui kebijakan privasi dan keamanan data untuk melanjutkan registrasi.',
             ]);
 
             // Jika validasi gagal, return error 422
@@ -83,6 +87,9 @@ class TamuController extends Controller
                 
                 Log::info('Photo uploaded: ' . $path);
             }
+
+            // Hapus privacy_consent dari data yang akan disimpan (tidak perlu disimpan ke database)
+            unset($validated['privacy_consent']);
 
             Log::info('Validated data:', $validated);
 
