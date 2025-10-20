@@ -104,6 +104,29 @@ class PegawaiController extends BaseController
         }
     }
 
+    public function approval()
+    {
+        // Tampilkan tamu dengan status 'checkin' DAN 'approved'
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+            ->whereIn('status', ['checkin', 'approved']) // checkin + approved tetap muncul
+            ->orderBy('checkin_at', 'desc')
+            ->paginate(10);
+        
+        // Stats untuk badge
+        $stats = [
+            'menunggu_approval' => TamuModel::where('status', 'checkin')->count(),
+            'approved' => TamuModel::where('status', 'approved')->count(),
+            'total' => TamuModel::whereIn('status', ['checkin', 'approved'])->count(),
+        ];
+        
+        Log::info('Pegawai approval page loaded', [
+            'menunggu_approval' => $stats['menunggu_approval'],
+            'sudah_approved' => $stats['approved'],
+            'total_ditampilkan' => $tamus->total()
+        ]);
+        
+        return view('pages.pegawai.index', compact('tamus', 'stats'));
+    }
     // Approve tamu yang sudah checkin
     public function approve($id)
     {

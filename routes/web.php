@@ -29,8 +29,12 @@ Route::middleware('guest')->group(function () {
 });
 
 // Route untuk display QR Code (tanpa auth)
-Route::get('/tamu/qr/{qr_code}', [App\Http\Controllers\TamuController::class, 'showQrCode'])
+Route::get('/tamu/qr/{id}', [TamuController::class, 'showQrCode'])
     ->name('tamu.qr.show');
+
+    // Route khusus login dari QR scan
+Route::get('/login/qr/{id}', [AuthController::class, 'showQrLoginForm'])->name('login.qr');
+Route::post('/login/qr/{id}', [AuthController::class, 'loginFromQr'])->name('login.qr.post');
 
 // Protected routes - hanya untuk user yang sudah login
 Route::middleware('auth')->group(function () {
@@ -88,10 +92,7 @@ Route::middleware('auth')->group(function () {
         })->name('dashboard');
         
         // Pegawai specific routes bisa ditambah disini
-        Route::get('/approval', function() {
-            $tamus = \App\Models\TamuModel::where('status', 'checkin')->paginate(10);
-            return view('pages.pegawai.index', compact('tamus'));
-        })->name('approval');
+        Route::get('/approval', [PegawaiController::class, 'approval'])->name('approval');
 
          // Notifications
         Route::get('/notifications', [PegawaiController::class, 'notifications'])->name('notifications');
