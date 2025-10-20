@@ -22,19 +22,40 @@ class PegawaiController extends BaseController
     // Halaman dashboard pegawai
     public function index()
     {
-    $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
         
+        // Pending approval = tamu yang sudah checkin tapi belum diverifikasi
+        $pendingApproval = $tamus->where('status', 'checkin')->count();
+
+        // Disetujui hari ini
+        $approvedToday = $tamus->where('status', 'approved')
+                            ->whereBetween('updated_at', [now()->startOfDay(), now()->endOfDay()])
+                            ->count();
+
+        // Total disetujui
+        $totalApproved = $tamus->where('status', 'approved')->count();
+
+        // Hitung approval rate
+        $approvalRate = $tamus->count() > 0 
+            ? round(($totalApproved / $tamus->count()) * 100, 1)
+            : 0;
+
         $stats = [
             'total' => $tamus->count(),
             'belum_checkin' => $tamus->where('status', 'belum_checkin')->count(),
             'checkin' => $tamus->where('status', 'checkin')->count(),
             'approved' => $tamus->where('status', 'approved')->count(),
+            'pending_approval' => $pendingApproval,
+            'approved_today' => $approvedToday,
+            'total_approved' => $totalApproved,
+            'approval_rate' => $approvalRate,
         ];
 
         return view('pages.pegawai.dashboard', compact('tamus', 'stats'));
     }
+
 
     // List tamu dengan pagination
     public function list()

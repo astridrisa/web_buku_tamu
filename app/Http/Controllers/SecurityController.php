@@ -191,28 +191,16 @@ class SecurityController extends Controller
         Log::info('Auth user: ', (array) Auth::user());
 
         $tamu = TamuModel::findOrFail($id);
-        
+
         if ($tamu->status !== 'belum_checkin') {
-            return response()->json(['success' => false, 'message' => 'Tamu sudah di-checkin']);
-        }
+            return redirect()->back()->with('error', 'Tamu sudah di-checkin');
+        }   
 
         $tamu->update([
             'status' => 'checkin',
             'checkin_at' => now(),
             'checkin_by' => (int) Auth::user()->id
         ]);
-
-        // // // 📱 GENERATE QR CODE
-        // // $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
-
-        // // // 📧 KIRIM EMAIL KE TAMU
-        // // Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
-
-        // // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
-        // $this->notificationService->notifyPegawaiCheckedIn($tamu);
-
-        // Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
-
         try {
             // GENERATE QR CODE
             $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
@@ -238,11 +226,7 @@ class SecurityController extends Controller
             Log::error("Error sending notification: " . $e->getMessage());
         }
 
-        return response()->json([
-            'success' => true, 
-            'message' => 'Tamu berhasil di-checkin',
-            'qr_code' => route('tamu.qr.show', $tamu->qr_code)
-        ]);
+        return redirect()->route('security.list')->with('success', 'Tamu berhasil di-checkin');
     }
 
     // Checkout tamu
