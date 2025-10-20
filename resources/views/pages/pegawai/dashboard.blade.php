@@ -236,7 +236,7 @@
             </div>
 
             <!-- Notifications Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            {{-- <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
                         <i class="mdi mdi-bell-outline me-2"></i>Notifikasi
@@ -248,7 +248,7 @@
                         <i class="mdi mdi-bell-check-outline me-1"></i>Lihat Notifikasi
                     </a>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Help Card -->
             <div class="card shadow-sm border-0 bg-light">
