@@ -165,6 +165,28 @@
                             @enderror
                         </div>
 
+                        <!-- Nama Pegawai yang Dituju -->
+                        <div class="col-md-12 mb-3">
+                            <label for="nama_pegawai" class="form-label">
+                                Nama Pegawai yang Dituju <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="mdi mdi-account-tie"></i>
+                                </span>
+                                <input type="text" 
+                                    class="form-control @error('nama_pegawai') is-invalid @enderror" 
+                                    id="nama_pegawai" 
+                                    name="nama_pegawai" 
+                                    value="{{ old('nama_pegawai', $tamu->nama_pegawai) }}" 
+                                    placeholder="Masukkan nama pegawai yang dituju"
+                                    required>
+                            </div>
+                            @error('nama_pegawai')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Tujuan Kunjungan -->
                         <div class="col-md-12 mb-3">
                             <label for="tujuan" class="form-label">
