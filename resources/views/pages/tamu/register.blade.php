@@ -195,6 +195,66 @@
             border-color: #667eea;
             box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
         }
+
+         /* Photo Upload Styling */
+        .photo-upload-container {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px dashed #e9ecef;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-upload-container:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .photo-preview {
+            width: 300px;
+            height: 200px;
+            margin: 0 auto 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .photo-preview i {
+            font-size: 60px;
+            color: #ccc;
+        }
+        
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-file-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        #foto {
+            display: none;
+        }
         
         .btn-submit {
             background: linear-gradient(45deg, #667eea, #764ba2);
@@ -266,6 +326,149 @@
                 padding: 6px 12px;
             }
         }
+
+       /* Privacy Agreement Styling */
+        .privacy-agreement {
+            background: rgba(102, 126, 234, 0.05);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .privacy-agreement.checked {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .privacy-agreement.error {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.05);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .privacy-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .privacy-header:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .privacy-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        .privacy-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .privacy-toggle i {
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .privacy-toggle i.rotated {
+            transform: rotate(180deg);
+        }
+
+        .privacy-content {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 15px;
+            max-height: 0;
+            overflow: hidden;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #495057;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+        }
+
+        .privacy-content.show {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .privacy-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .privacy-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .privacy-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .privacy-content ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .privacy-content li {
+            margin-bottom: 8px;
+        }
+
+        .privacy-checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .privacy-checkbox-wrapper:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .privacy-checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        cursor: pointer;
+        margin-top: 3px;
+        flex-shrink: 0;
+        accent-color: #667eea;
+    }
+
+    .privacy-checkbox-label {
+        flex: 1;
+        font-size: 0.95rem;
+        color: #495057;
+        line-height: 1.6;
+        cursor: pointer;
+    }
     </style>
 </head>
 <body>
@@ -292,8 +495,20 @@
             </div>
             
             <div class="card-body">
-                <form id="registrationForm" method="POST" action="{{ route('tamu.store') }}">
+                <form id="registrationForm" method="POST" action="{{ route('tamu.store') }}" enctype="multipart/form-data">
                     @csrf
+
+                    <!-- Photo Upload -->
+                    <div class="photo-upload-container">
+                        <div class="photo-preview" id="photoPreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <label for="foto" class="custom-file-upload">
+                            <i class="fas fa-camera me-2"></i>Upload Foto
+                        </label>
+                        <input type="file" id="foto" name="foto" accept="image/*">
+                        <p class="text-muted small mt-2 mb-0">Format: JPG, PNG (Max 2MB)</p>
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-6">
@@ -336,6 +551,12 @@
                         <input type="text" class="form-control" id="tujuan" name="tujuan" placeholder="Tujuan Kunjungan" required>
                         <label for="tujuan"><i class="fas fa-bullseye me-2"></i>Tujuan Kunjungan</label>
                     </div>
+
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="nama_pegawai" name="nama_pegawai" placeholder="Nama Pegawai yang Dituju" required>
+                        <label for="nama_pegawai"><i class="fas fa-user-tie me-2"></i>Nama Pegawai yang Dituju</label>
+                    </div>
+                    
                     
                     <div class="form-floating">
                         <select class="form-select" id="jenis_identitas_id" name="jenis_identitas_id" required>
@@ -346,7 +567,55 @@
                         </select>
                         <label for="jenis_identitas_id"><i class="fas fa-id-card me-2"></i>Jenis Identitas</label>
                     </div>
-                    
+
+                    <!-- Privacy Agreement Section -->
+                    <div class="privacy-agreement" id="privacyAgreement">
+                        <!-- Clickable Header -->
+                        <div class="privacy-header" id="privacyHeader" style="cursor: pointer; user-select: none;">
+                            <div class="privacy-title">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Kebijakan Privasi & Keamanan Data</span>
+                            </div>
+                            <div class="privacy-toggle">
+                                <span id="toggleText">Baca Detail</span>
+                                <i class="fas fa-chevron-down" id="toggleIcon"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Collapsible Content -->
+                        <div class="privacy-content" id="privacyContent">
+                            <p><strong>Dengan mendaftar, Anda menyetujui hal-hal berikut:</strong></p>
+                            <ul>
+                                <li><strong>Pengumpulan Data:</strong> Kami mengumpulkan data pribadi Anda (nama, alamat, nomor telepon, email, foto, dan informasi kunjungan) untuk keperluan administrasi dan keamanan.</li>
+                                <li><strong>Penggunaan Data:</strong> Data Anda akan digunakan untuk:
+                                    <ul>
+                                        <li>Verifikasi identitas dan keamanan gedung</li>
+                                        <li>Pencatatan buku tamu digital</li>
+                                        <li>Komunikasi terkait kunjungan Anda</li>
+                                        <li>Keperluan keamanan dan kedaruratan</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Penyimpanan Data:</strong> Data Anda akan disimpan secara aman dalam sistem kami dan hanya dapat diakses oleh petugas yang berwenang.</li>
+                                <li><strong>Keamanan:</strong> Kami berkomitmen untuk menjaga keamanan data Anda dengan standar keamanan yang tinggi.</li>
+                                <li><strong>Hak Anda:</strong> Anda memiliki hak untuk mengakses, memperbaiki, atau menghapus data pribadi Anda dengan menghubungi administrator sistem.</li>
+                            </ul>
+                            <p class="mb-0"><em>Jika Anda tidak menyetujui kebijakan ini, mohon untuk tidak melanjutkan registrasi.</em></p>
+                        </div>
+                        
+                        <!-- Checkbox -->
+                        <div class="privacy-checkbox-wrapper">
+                            <input type="checkbox" id="privacyConsent" name="privacy_consent" required>
+                            <label for="privacyConsent" class="privacy-checkbox-label">
+                                Saya telah membaca dan <strong>menyetujui</strong> kebijakan privasi dan keamanan data di atas, serta memberikan izin untuk penggunaan data pribadi saya dalam sistem buku tamu PJT 1.
+                            </label>
+                        </div>
+                        
+                        <div class="privacy-error" id="privacyError">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            Anda harus menyetujui kebijakan privasi untuk melanjutkan registrasi
+                        </div>
+                    </div>
+                                        
                     <button type="submit" class="btn btn-submit">
                         <span class="submit-text">
                             <i class="fas fa-paper-plane me-2"></i>Daftar Sekarang
@@ -380,107 +649,177 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        $(document).ready(function() {
-            // CSRF Token setup
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    $(document).ready(function() {
+        // CSRF Token setup
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        // Privacy header toggle (accordion)
+        $('#privacyHeader').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const content = $('#privacyContent');
+            const icon = $('#toggleIcon');
+            const text = $('#toggleText');
+            
+            content.toggleClass('show');
+            icon.toggleClass('rotated');
+            
+            if (content.hasClass('show')) {
+                text.text('Tutup');
+            } else {
+                text.text('Baca Detail');
+            }
+        });
+
+        // Privacy consent checkbox handler
+        $('#privacyConsent').on('change', function() {
+            const privacyAgreement = $('#privacyAgreement');
+            const privacyError = $('#privacyError');
+            
+            if ($(this).is(':checked')) {
+                privacyAgreement.addClass('checked').removeClass('error');
+                privacyError.removeClass('show');
+            } else {
+                privacyAgreement.removeClass('checked');
+            }
+        });
+
+        // Preview foto
+        $('#foto').on('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validasi ukuran
+                if (file.size > 2048000) {
+                    alert('Ukuran file terlalu besar. Maksimal 2MB');
+                    $(this).val('');
+                    return;
                 }
-            });
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        $('#registrationForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Validasi privacy consent
+            if (!$('#privacyConsent').is(':checked')) {
+                $('#privacyAgreement').addClass('error');
+                $('#privacyError').addClass('show');
+                
+                // Scroll ke privacy agreement
+                $('html, body').animate({
+                    scrollTop: $('#privacyAgreement').offset().top - 100
+                }, 500);
+                
+                return false;
+            }
             
-            $('#registrationForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                // Show loading state
-                const submitBtn = $('.btn-submit');
-                const submitText = $('.submit-text');
-                const loadingText = $('.loading');
-                
-                submitBtn.prop('disabled', true);
-                submitText.hide();
-                loadingText.show();
-                
-                // Hide previous messages
-                $('#successMessage, #errorMessage').hide();
-                $('.form-control, .form-select').removeClass('is-invalid');
-                $('.invalid-feedback').remove();
-                
-                // Submit form
-                $.ajax({
-                    url: $(this).attr('action'),
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.success) {
-                            $('#successMessage').fadeIn();
-                            $('#registrationForm')[0].reset();
-                            
-                            // Auto reset form after 5 seconds
-                            setTimeout(function() {
-                                $('#successMessage').fadeOut();
-                            }, 10000);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'Terjadi kesalahan saat mendaftar.';
+            // Show loading state
+            const submitBtn = $('.btn-submit');
+            const submitText = $('.submit-text');
+            const loadingText = $('.loading');
+            
+            submitBtn.prop('disabled', true);
+            submitText.hide();
+            loadingText.show();
+            
+            // Hide previous messages
+            $('#successMessage, #errorMessage').hide();
+            $('.form-control, .form-select').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+            $('#privacyAgreement').removeClass('error');
+            $('#privacyError').removeClass('show');
+            
+            // Gunakan FormData untuk mengirim file
+            var formData = new FormData(this);
+            
+            // Submit form
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        $('#successMessage').fadeIn();
+                        $('#registrationForm')[0].reset();
+                        $('#photoPreview').html('<i class="fas fa-user"></i>');
+                        $('#privacyAgreement').removeClass('checked');
+
+                        // Scroll to success message
+                        $('html, body').animate({
+                            scrollTop: $('#successMessage').offset().top - 100
+                        }, 500);
                         
-                        if (xhr.status === 422) {
-                            const errors = xhr.responseJSON.errors;
-                            let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
+                        // Auto reset form after 10 seconds
+                        setTimeout(function() {
+                            $('#successMessage').fadeOut();
+                        }, 10000);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan saat mendaftar.';
+                    
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
+                        
+                        $.each(errors, function(field, messages) {
+                            $(`#${field}`).addClass('is-invalid');
                             
-                            $.each(errors, function(field, messages) {
-                                // Add error class to field
-                                $(`#${field}`).addClass('is-invalid');
-                                
-                                // Add error messages
-                                messages.forEach(function(message) {
-                                    errorHtml += `<li>${message}</li>`;
-                                });
+                            messages.forEach(function(message) {
+                                errorHtml += `<li>${message}</li>`;
                             });
-                            
-                            errorHtml += '</ul>';
-                            errorMessage = errorHtml;
-                        }
+                        });
                         
-                        $('#errorMessage').html(errorMessage).fadeIn();
-                    },
-                    complete: function() {
-                        // Reset button state
-                        submitBtn.prop('disabled', false);
-                        loadingText.hide();
-                        submitText.show();
+                        errorHtml += '</ul>';
+                        errorMessage = errorHtml;
                     }
-                });
-            });
-            
-            // Remove error styling on input change
-            $('.form-control, .form-select').on('input change', function() {
-                $(this).removeClass('is-invalid');
-                $(this).siblings('.invalid-feedback').remove();
-            });
-            
-            // Format phone number
-            $('#no_telepon').on('input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length > 0) {
-                    if (value.startsWith('8')) {
-                        value = '0' + value;
-                    }
-                    $(this).val(value);
+                    
+                    $('#errorMessage').html(errorMessage).fadeIn();
+
+                    // Scroll to error message
+                    $('html, body').animate({
+                        scrollTop: $('#errorMessage').offset().top - 100
+                    }, 500);
+                },
+                complete: function() {
+                    // Reset button state
+                    submitBtn.prop('disabled', false);
+                    loadingText.hide();
+                    submitText.show();
                 }
             });
         });
         
-        // // Login functions (untuk sementara menggunakan alert, nanti bisa dihubungkan ke halaman login)
-        // function loginSatpam() {
-        //     alert('Login Satpam - Akan diarahkan ke halaman login satpam');
-        //     // Nanti bisa diganti dengan: window.location.href = '/satpam/login';
-        // }
+        // Remove error styling on input change
+        $('.form-control, .form-select').on('input change', function() {
+            $(this).removeClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
+        });
         
-        // function loginPegawai() {
-        //     alert('Login Pegawai - Akan diarahkan ke halaman login pegawai');
-        //     // Nanti bisa diganti dengan: window.location.href = '/pegawai/login';
-        // }
-    </script>
+        // Format phone number
+        $('#no_telepon').on('input', function() {
+            let value = $(this).val().replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.startsWith('8')) {
+                    value = '0' + value;
+                }
+                $(this).val(value);
+            }
+        });
+    });
+</script>
 </body>
 </html>

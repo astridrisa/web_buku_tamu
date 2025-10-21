@@ -19,7 +19,9 @@ class TamuModel extends Model
         'nama',
         'alamat',
         'no_telepon',
-        'tujuan', 
+        'tujuan',
+        'nama_pegawai',
+        'foto', 
         'email',
         'jumlah_rombongan',
 
@@ -86,6 +88,15 @@ public function getStatusTextAttribute()
         'checkout' => 'Checkout',
         default => 'Unknown',
     };
+}
+
+// Accessor untuk URL foto
+public function getFotoUrlAttribute()
+{
+    if ($this->foto) {
+        return asset('storage/' . $this->foto);
+    }
+    return asset('img/default-avatar.png');
 }
 
 }

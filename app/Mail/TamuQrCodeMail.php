@@ -22,7 +22,6 @@ class TamuQrCodeMail extends Mailable
     public function __construct(TamuModel $tamu, $qrCodePath)
     {
         $this->tamu = $tamu;
-        // ✅ Normalisasi path untuk Windows
         $this->qrCodePath = str_replace('/', DIRECTORY_SEPARATOR, $qrCodePath);
     }
 
@@ -36,36 +35,51 @@ class TamuQrCodeMail extends Mailable
 
     public function content(): Content
     {
-        // ✅ Cek apakah file exists
-        if (!file_exists($this->qrCodePath)) {
-            Log::error("QR Code file not found: {$this->qrCodePath}");
-            $qrCodeSvg = '<p>QR Code tidak tersedia</p>';
+        // Generate URL QR Code dengan ID tamu
+        $qrCodeUrl = route('login.qr', $this->tamu->id);
+        
+        Log::info('Preparing QR Code email', [
+            'tamu_id' => $this->tamu->id,
+            'tamu_name' => $this->tamu->nama,
+            'qr_url' => $qrCodeUrl,
+            'qr_file_path' => $this->qrCodePath,
+            'file_exists' => file_exists($this->qrCodePath)
+        ]);
+
+        // Cek apakah file QR Code PNG exists
+        $qrCodeBase64 = null;
+        if (file_exists($this->qrCodePath)) {
+            // Convert PNG to base64 untuk embed di email
+            $imageData = file_get_contents($this->qrCodePath);
+            $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($imageData);
+            Log::info("QR Code PNG loaded successfully from: {$this->qrCodePath}");
         } else {
-            $qrCodeSvg = file_get_contents($this->qrCodePath);
-            Log::info("QR Code file loaded successfully from: {$this->qrCodePath}");
+            Log::error("QR Code PNG file not found: {$this->qrCodePath}");
         }
 
         return new Content(
             view: 'pages.emails.tamu-qrcode',
             with: [
                 'tamu' => $this->tamu,
-                'qrCodeUrl' => route('tamu.qr.show', $this->tamu->qr_code),
-                // 'qrCodeSvg' => $qrCodeSvg
+                'qrCodeUrl' => $qrCodeUrl, // URL untuk link button
+                'qrCodeBase64' => $qrCodeBase64, // Base64 image untuk display
             ]
         );
     }
 
     public function attachments(): array
     {
-        // // ✅ Hanya attach jika file exists
-        // if (file_exists($this->qrCodePath)) {
-        //     return [
-        //         Attachment::fromPath($this->qrCodePath)
-        //             ->as('qrcode.svg')
-        //             ->withMime('image/svg+xml'),
-        //     ];
-        // }
+        // Attach QR code PNG jika file exists
+        if (file_exists($this->qrCodePath)) {
+            Log::info("Attaching QR Code PNG to email");
+            return [
+                Attachment::fromPath($this->qrCodePath)
+                    ->as('qrcode-' . $this->tamu->nama . '.png')
+                    ->withMime('image/png'),
+            ];
+        }
         
+        Log::warning("QR Code file not found, no attachment added");
         return [];
     }
 }

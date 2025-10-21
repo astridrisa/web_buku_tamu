@@ -13,6 +13,8 @@ use App\Mail\TamuQrCodeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller;
@@ -85,16 +87,38 @@ class SecurityController extends Controller
             'alamat' => 'required|string',
             'no_telepon' => 'required|string|max:20',
             'tujuan' => 'required|string|max:255',
+            'nama_pegawai' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'jumlah_rombongan' => 'nullable|integer|min:1',
             'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
+        if ($validator->fails()) {
+                Log::error('Validation errors:', $validator->errors()->toArray());
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+        }
+
         $data = $validator->validated();
+
+        // Handle upload foto
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = time() . '_' . Str::slug($data['nama']) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('tamu_photos', $filename, 'public');
+            $data['foto'] = $path;
+            
+            Log::info('Photo uploaded successfully: ' . $path);
+        }
+    
         $data['status'] = 'belum_checkin';
-        // $data['qr_code'] = \Illuminate\Support\Str::uuid();
-        $tamu = TamuModel::create($data);
-        $tamu->update(['qr_code' => $tamu->id]);
+        $data['qr_code'] = \Illuminate\Support\Str::uuid();
+
+        if (!isset($data['jumlah_rombongan'])) {
+                $data['jumlah_rombongan'] = 1;
+            }
 
         TamuModel::create($data);
 
@@ -122,10 +146,25 @@ class SecurityController extends Controller
             'alamat' => 'required|string',
             'no_telepon' => 'required|string|max:20',
             'tujuan' => 'required|string|max:255',
+            'nama_pegawai' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'jumlah_rombongan' => 'nullable|integer|min:1',
             'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+         // Handle upload foto baru
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($tamu->foto) {
+                Storage::disk('public')->delete($tamu->foto);
+            }
+            
+            $file = $request->file('foto');
+            $filename = time() . '_' . Str::slug($validated['nama']) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('tamu_photos', $filename, 'public');
+            $validated['foto'] = $path;
+        }
 
         $tamu->update($validated);
 
@@ -152,33 +191,18 @@ class SecurityController extends Controller
         Log::info('Auth user: ', (array) Auth::user());
 
         $tamu = TamuModel::findOrFail($id);
-        
+
         if ($tamu->status !== 'belum_checkin') {
-            return response()->json(['success' => false, 'message' => 'Tamu sudah di-checkin']);
-        }
+            return redirect()->back()->with('error', 'Tamu sudah di-checkin');
+        }   
 
         $tamu->update([
             'status' => 'checkin',
             'checkin_at' => now(),
             'checkin_by' => (int) Auth::user()->id
         ]);
-
-        // // // 📱 GENERATE QR CODE
-        // // $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
-
-        // // // 📧 KIRIM EMAIL KE TAMU
-        // // Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
-
-        // // 🔔 KIRIM NOTIFIKASI KE PEGAWAI
-        // $this->notificationService->notifyPegawaiCheckedIn($tamu);
-
-        // Log::info("QR Code sent to {$tamu->email} and notification sent to pegawai for tamu ID: {$tamu->id}");
-
         try {
-            // 🧹 Hapus QR code lama dulu (biar yang lama gak kepakai lagi)
-            $this->qrCodeService->deleteOldQrCodes($tamu->id);
-
-            // 🆕 Generate QR Code baru (arah ke /login/qr/{id})
+            // GENERATE QR CODE
             $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
             Log::info("QR Code generated at: {$qrCodePath}");
 
@@ -198,11 +222,7 @@ class SecurityController extends Controller
             Log::error("Error sending notification: " . $e->getMessage());
         }
 
-        return response()->json([
-            'success' => true, 
-            'message' => 'Tamu berhasil di-checkin',
-            'qr_code' => url("/login/qr/{$tamu->id}")
-        ]);
+        return redirect()->route('security.list')->with('success', 'Tamu berhasil di-checkin');
     }
 
     // Checkout tamu

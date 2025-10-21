@@ -22,19 +22,40 @@ class PegawaiController extends BaseController
     // Halaman dashboard pegawai
     public function index()
     {
-    $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
         
+        // Pending approval = tamu yang sudah checkin tapi belum diverifikasi
+        $pendingApproval = $tamus->where('status', 'checkin')->count();
+
+        // Disetujui hari ini
+        $approvedToday = $tamus->where('status', 'approved')
+                            ->whereBetween('updated_at', [now()->startOfDay(), now()->endOfDay()])
+                            ->count();
+
+        // Total disetujui
+        $totalApproved = $tamus->where('status', 'approved')->count();
+
+        // Hitung approval rate
+        $approvalRate = $tamus->count() > 0 
+            ? round(($totalApproved / $tamus->count()) * 100, 1)
+            : 0;
+
         $stats = [
             'total' => $tamus->count(),
             'belum_checkin' => $tamus->where('status', 'belum_checkin')->count(),
             'checkin' => $tamus->where('status', 'checkin')->count(),
             'approved' => $tamus->where('status', 'approved')->count(),
+            'pending_approval' => $pendingApproval,
+            'approved_today' => $approvedToday,
+            'total_approved' => $totalApproved,
+            'approval_rate' => $approvalRate,
         ];
 
         return view('pages.pegawai.dashboard', compact('tamus', 'stats'));
     }
+
 
     // List tamu dengan pagination
     public function list()
@@ -52,9 +73,81 @@ class PegawaiController extends BaseController
         $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                     ->findOrFail($id);
         
-        return view('pages.pegawai.tamu.detail', compact('tamu'));
+        return view('pages.pegawai.show', compact('tamu'));
     }
 
+    public function edit($id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+        $jenisIdentitas = JenisIdentitasModel::all();
+        
+        return view('pages.tamu.edit', compact('tamu', 'jenisIdentitas'));
+    }
+
+    // Update tamu
+    public function update(Request $request, $id)
+    {
+        $tamu = TamuModel::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'alamat' => 'required|string',
+            'no_telepon' => 'required|string|max:20',
+            'tujuan' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'jumlah_rombongan' => 'nullable|integer|min:1',
+            'jenis_identitas_id' => 'required|integer|exists:jenis_identitas,id',
+        ]);
+
+        $tamu->update($validated);
+
+        return redirect()->route('pegawai.list')
+            ->with('success', 'Data tamu berhasil diperbarui');
+    }
+
+    // Hapus tamu
+    public function delete($id)
+    {
+        try {
+            $tamu = TamuModel::findOrFail($id);
+            $tamu->delete();
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Tamu berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting tamu: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
+            ], 500);
+        }
+    }
+
+    public function approval()
+    {
+        // Tampilkan tamu dengan status 'checkin' DAN 'approved'
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+            ->whereIn('status', ['checkin', 'approved']) // checkin + approved tetap muncul
+            ->orderBy('checkin_at', 'desc')
+            ->paginate(10);
+        
+        // Stats untuk badge
+        $stats = [
+            'menunggu_approval' => TamuModel::where('status', 'checkin')->count(),
+            'approved' => TamuModel::where('status', 'approved')->count(),
+            'total' => TamuModel::whereIn('status', ['checkin', 'approved'])->count(),
+        ];
+        
+        Log::info('Pegawai approval page loaded', [
+            'menunggu_approval' => $stats['menunggu_approval'],
+            'sudah_approved' => $stats['approved'],
+            'total_ditampilkan' => $tamus->total()
+        ]);
+        
+        return view('pages.pegawai.index', compact('tamus', 'stats'));
+    }
     // Approve tamu yang sudah checkin
     public function approve($id)
     {
@@ -62,10 +155,9 @@ class PegawaiController extends BaseController
             // cek dulu apakah datanya ketemu
             $tamu = TamuModel::find($id);
             if (!$tamu) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tamu tidak ditemukan',
-                ], 404);
+            return redirect()
+                ->route('pegawai.approval')
+                ->with('error', 'Data tamu tidak ditemukan');
             }
 
             // debug: cek data tamu sebelum update
@@ -92,17 +184,14 @@ class PegawaiController extends BaseController
             Log::info('Update result:', [$update]);
             Log::info('After update:', $tamu->fresh()->toArray());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Tamu approved successfully',
-                'data' => $tamu->fresh()
-            ]);
+             return redirect()
+            ->route('pegawai.approval')
+            ->with('success', "Kunjungan tamu {$tamu->nama} telah disetujui.");
         } catch (\Exception $e) {
             Log::error('Approve Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return redirect()
+                ->route('pegawai.approval')
+                ->with('error', 'Terjadi kesalahan saat menyetujui tamu.');
         }
     }
 

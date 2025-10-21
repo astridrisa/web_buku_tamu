@@ -21,8 +21,27 @@
             </div>
             
             <div class="card-body">
-                <form action="{{ route('security.store') }}" method="POST">
+                <form action="{{ route('security.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+
+                    <!-- Photo Upload Section -->
+                    <div class="text-center mb-4">
+                        <div class="photo-preview-container">
+                            <div class="photo-preview" id="photoPreview">
+                                <i class="mdi mdi-account-circle"></i>
+                            </div>
+                            <div class="mt-3">
+                                <label for="foto" class="btn btn-primary btn-sm">
+                                    <i class="mdi mdi-camera me-1"></i>
+                                    Upload Foto
+                                </label>
+                                <input type="file" id="foto" name="foto" accept="image/*" class="d-none">
+                                <p class="text-muted small mt-2 mb-0">Format: JPG, PNG (Max 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="mb-4">
                     
                     <div class="row">
                         <!-- Nama -->
@@ -126,6 +145,24 @@
                             @enderror
                         </div>
 
+                        <!-- Nama Pegawai -->
+                        <div class="col-md-6 mb-3">
+                            <label for="nama_pegawai" class="form-label">
+                                Nama Pegawai yang Dituju <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control @error('nama_pegawai') is-invalid @enderror" 
+                                   id="nama_pegawai" 
+                                   name="nama_pegawai" 
+                                   value="{{ old('nama_pegawai') }}" 
+                                   placeholder="Nama pegawai"
+                                   required>
+                            @error('nama_pegawai')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+
                         <!-- Tanggal Kunjungan -->
                         <div class="col-md-6 mb-3">
                             <label for="tanggal_kunjungan" class="form-label">
@@ -199,5 +236,74 @@
     border: none;
     border-radius: 8px;
 }
+
+.photo-preview-container {
+    display: inline-block;
+}
+
+.photo-preview {
+    width: 300px;
+    height: 200px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 3px solid #007bff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.photo-preview i {
+    font-size: 80px;
+    color: #dee2e6;
+}
 </style>
+@endpush
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Preview foto
+    $('#foto').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validasi ukuran
+            if (file.size > 2048000) {
+                alert('Ukuran file terlalu besar. Maksimal 2MB');
+                $(this).val('');
+                return;
+            }
+            
+            // Validasi tipe file
+            if (!file.type.match('image.*')) {
+                alert('File harus berupa gambar');
+                $(this).val('');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Format nomor telepon
+    $('#no_telepon').on('input', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length > 0 && value.startsWith('8')) {
+            value = '0' + value;
+        }
+        $(this).val(value);
+    });
+});
+</script>
 @endpush

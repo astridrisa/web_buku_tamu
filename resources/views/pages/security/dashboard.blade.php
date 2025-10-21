@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-success bg-opacity-10 border-0">
-                    <small class="text-success"><i class="mdi mdi-information"></i> Tamu yang telah diverifikasi</small>
+                    <small class="text-success"><i class="mdi mdi-information"></i> Tamu telah bertemu dengan pihak terkait </small>
                 </div>
             </div>
         </div>

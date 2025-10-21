@@ -66,22 +66,42 @@
                                 <td>{{ $tamu->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        @if($tamu->status === 'belum_checkin')
-                                            <button type="button" class="btn btn-success checkin-btn" data-id="{{ $tamu->id }}"
-                                                data-name="{{ $tamu->nama }}">
-                                                <i class="mdi mdi-login me-1"></i> Check In
-                                            </button>
-                                        @elseif($tamu->status === 'checkin')
-                                            <button type="button" class="btn btn-primary approve-btn" data-id="{{ $tamu->id }}"
-                                                data-name="{{ $tamu->nama }}">
-                                                <i class="mdi mdi-check-circle me-1"></i> Approve
-                                            </button>
-                                        @elseif($tamu->status === 'approved')
-                                            <button type="button" class="btn btn-danger checkout-btn" data-id="{{ $tamu->id }}"
-                                                data-name="{{ $tamu->nama }}">
-                                                <i class="mdi mdi-logout me-1"></i> Check Out
+                                        @if($tamu->status === 'checkin')
+                                            <button type="button" class="btn btn-outline-primary approve-btn"
+                                                data-id="{{ $tamu->id }}" data-name="{{ $tamu->nama }}" title="Approve">
+                                                <i class="mdi mdi-check-circle"></i>
                                             </button>
                                         @endif
+
+                                        <button type="button"
+                                            class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('pegawai.show', $tamu->id) }}">
+                                                    <i class="mdi mdi-eye me-2 text-info"></i>
+                                                    Lihat Detail
+                                                </a>
+                                            </li>
+                                            {{-- <li>
+                                                <a class="dropdown-item" href="{{ route('pegawai.edit', $tamu->id) }}">
+                                                    <i class="mdi mdi-pencil me-2 text-warning"></i>
+                                                    Edit
+                                                </a>
+                                            </li>
+                                            <li> --}}
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger btn-delete"
+                                                    data-id="{{ $tamu->id }}" data-name="{{ $tamu->nama }}">
+                                                    <i class="mdi mdi-delete me-2"></i>
+                                                    Hapus
+                                                </button>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
@@ -318,6 +338,46 @@
                         }
                     });
                 });
+
+                               // ========== DELETE BUTTON HANDLER ==========
+                $(document).on('click', '.btn-delete', function () {
+                    const tamuId = $(this).data('id');
+                    const tamuName = $(this).data('name');
+                    const button = $(this);
+
+                    if (confirm(`Apakah Anda yakin ingin menghapus data tamu "${tamuName}"?\n\nData yang dihapus tidak dapat dikembalikan!`)) {
+                        button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin me-2"></i> Menghapus...');
+
+                        $.ajax({
+                            url: `/pegawai/${tamuId}`,
+                            method: 'DELETE',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    showAlert('success', response.message || 'Data tamu berhasil dihapus');
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                } else {
+                                    showAlert('danger', response.message || 'Gagal menghapus data');
+                                    button.prop('disabled', false).html('<i class="mdi mdi-delete me-2"></i> Hapus');
+                                }
+                            },
+                            error: function (xhr) {
+                                console.error('Delete error:', xhr);
+                                let errorMsg = 'Terjadi kesalahan saat menghapus data';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMsg = xhr.responseJSON.message;
+                                }
+                                showAlert('danger', errorMsg);
+                                button.prop('disabled', false).html('<i class="mdi mdi-delete me-2"></i> Hapus');
+                            }
+                        });
+                    }
+                });
+
 
                 // ========== ALERT FUNCTION ==========
                 function showAlert(type, message) {
