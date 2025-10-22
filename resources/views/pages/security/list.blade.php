@@ -214,7 +214,7 @@
                                 '      <option value="belum_checkin">Belum Checkin</option>' +
                                 '      <option value="checkin">Checkin</option>' +
                                 '      <option value="approved">Approved</option>' +
-                                '      <option value="checked_out">Checked Out</option>' +
+                                '      <option value="checkout">Checked Out</option>' +
                                 '    </select>' +
                                 '  </div>' +
                                 '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +

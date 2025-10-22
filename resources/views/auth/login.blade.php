@@ -248,10 +248,10 @@
                 @csrf
                 
                 <div class="form-floating">
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                           id="email" name="email" placeholder="Email" value="{{ old('email') }}" required autofocus>
-                    <label for="email">
-                        <i class="fas fa-envelope me-2"></i>Email
+                    <input type="text" class="form-control @error('kopeg') is-invalid @enderror" 
+                           id="kopeg" name="kopeg" placeholder="kopeg" value="{{ old('kopeg') }}" required autofocus>
+                    <label for="kopeg">
+                        <i class="fas fa-envelope me-2"></i>Username
                     </label>
                     <div class="role-indicator">
                         <i class="fas fa-at"></i>
@@ -323,20 +323,20 @@
             $('.demo-item').click(function() {
                 const text = $(this).text();
                 if (text.includes('security@example.com')) {
-                    $('#email').val('security@example.com');
+                    $('#kopeg').val('security@example.com');
                     $('#password').val('password');
                 } else if (text.includes('pegawai@example.com')) {
-                    $('#email').val('pegawai@example.com');
+                    $('#kopeg').val('pegawai@example.com');
                     $('#password').val('password');
                 }
             });
             
             // Form validation
             $('form').on('submit', function(e) {
-                const email = $('#email').val();
+                const kopeg = $('#kopeg').val();
                 const password = $('#password').val();
                 
-                if (!email || !password) {
+                if (!kopeg || !password) {
                     e.preventDefault();
                     alert('Email dan password harus diisi!');
                 }

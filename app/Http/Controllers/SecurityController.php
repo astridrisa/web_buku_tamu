@@ -120,6 +120,9 @@ class SecurityController extends Controller
                 $data['jumlah_rombongan'] = 1;
             }
 
+        $data['tanggal_kunjungan'] = now()->format('Y-m-d');
+        $data['jam_kunjungan'] = now()->format('H:i');
+
         TamuModel::create($data);
 
         return redirect()

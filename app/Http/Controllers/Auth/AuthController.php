@@ -4,101 +4,242 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\TamuModel;
+use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
 
 class AuthController extends Controller
 {
     // Tampilkan form login
     public function showLoginForm()
     {
-        return view('auth.login'); // bikin view login.blade.php
+        return view('auth.login'); // login.blade.php
     }
 
-    // Proses login
+    // Proses login (biasa)
     public function login(Request $request)
     {
+        // Validasi input
+
         $request->validate([
-            'email' => 'required|string',  // bisa email / username
+            'kopeg' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // cek apakah input berupa email atau username
-        $fieldType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+        $user = UserModel::where('kopeg', $request->kopeg)->first();
 
-        // coba login
-        if (Auth::attempt([$fieldType => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->route('dashboard');
-        }
-
-        return back()->withErrors([
-            'login' => 'Email/Username atau password salah.',
-        ])->onlyInput('login');
+    if ($user && Auth::attempt(['kopeg' => $request->kopeg, 'password' => $request->password], $request->filled('remember'))) {
+        // User berhasil login lokal
+        $request->session()->regenerate();
+        return redirect()->intended(route('dashboard'));
+ // redirect ke dashboard
     }
 
-     // Tampilkan form login khusus dari QR scan
+        try {
+            $token = env('API_TOKEN', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoiSGVsbG8sIFdvcmxkISIsImV4cGlyZWRfdG9rZW4iOiIyMDI2LTA2LTAzIDE0OjQ0OjA1In0.81M6qkPwrHN4qON2KKXZLjsGxMs0nNjW10TDQrYkzVs'); // Ganti dengan token yang sesuai
+            $curl = curl_init();
+
+            // Header Authorization dengan token
+            $auth_data = array(
+                'Bearer:' . $token,
+            );
+
+            // Data yang dikirimkan
+            $data = array(
+                'kopeg' => ($request->kopeg),
+                'password' => ($request->password)
+            );
+
+            // Encode data menjadi JSON
+            $body = json_encode($data);
+
+            // Set cURL options
+            curl_setopt($curl, CURLOPT_URL, 'https://hadir.jasatirta1.co.id/api/login');
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $auth_data); // Header Authorization
+            curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $body); // Kirimkan data JSON sebagai body
+            curl_setopt($curl, CURLOPT_TIMEOUT, 10); // timeout optional, untuk keamanan
+
+            // Eksekusi cURL
+            $result = curl_exec($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+
+            if (!$result) {
+                throw new \Exception('Gagal menghubungi server API');
+            }
+
+            if ($httpCode !== 200) {
+                throw new \Exception('Server API mengembalikan status ' . $httpCode);
+            }
+
+            $response = json_decode($result, true);
+
+            if (isset($response['status']) && $response['status'] === true) {
+                $personal = $response['data']['personal_data'];
+
+
+                    $user = UserModel::firstOrCreate(
+                        [
+                            'kopeg' => $personal['kopeg'],
+                            'name' => $personal['full_name'],
+                        ],
+                        [
+                            'email' => $personal['email'] ?? null,
+                            'password' => bcrypt(\Str::random(12)),
+                            'role_id' => 2,
+                        ]
+                    );
+
+                    Auth::login($user);
+                $request->session()->regenerate();
+
+                return redirect()->intended($this->redirectTo);
+            }
+
+            // Jika login gagal (status false)
+            return back()->withErrors([
+                'kopeg' => 'Login gagal. Periksa kembali data Anda.',
+            ])->withInput();
+        } catch (\Exception $e) {
+            Log::error('Login API error: ' . $e->getMessage());
+
+            return back()->withErrors([
+                'kopeg' => 'Terjadi kesalahan saat menghubungi sistem Hadir. Silakan coba lagi nanti.',
+            ])->withInput();
+        }
+    }
+
+
+    //     // Login biasa email/username
+    //     $fieldType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+    //     if (Auth::attempt([$fieldType => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
+    //         $request->session()->regenerate();
+    //         return redirect()->route('dashboard');
+    //     }
+
+    //     return back()->withErrors([
+    //         'login' => 'Email/Username atau password salah.',
+    //     ])->onlyInput('email');
+    // }
+
+
+
+
+    // Form login QR scan
     public function showQrLoginForm($id)
     {
         $tamu = TamuModel::with(['jenisIdentitas'])->findOrFail($id);
-        
-        // Jika sudah login, langsung redirect ke approve
-        if (Auth::check() && Auth::user()->role === 'pegawai') {
+
+        // Kalau sudah login dan role pegawai, redirect ke approve
+        if (Auth::check() && Auth::user()->role_id == 2) {
             return redirect()->route('pegawai.show', $id);
         }
-        
+
         return view('auth.login-qr', compact('tamu'));
     }
 
-    // Proses login dari QR scan
-    public function loginFromQr(Request $request, $id)
+    // Login dari QR scan
+   /**
+     * Show login form
+     */
+    // public function showLoginForm()
+    // {
+    //     return view('auth.login');
+    // }
+
+    /**
+     * Custom login logic — local first, then API fallback.
+     */
+    public function loginFromQR(Request $request)
     {
         $request->validate([
-            'email' => 'required|string',
+            'kopeg' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // Cari data tamu berdasarkan ID
-        $tamu = TamuModel::findOrFail($id);
+        try {
+            $token = env('API_TOKEN', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoiSGVsbG8sIFdvcmxkISIsImV4cGlyZWRfdG9rZW4iOiIyMDI2LTA2LTAzIDE0OjQ0OjA1In0.81M6qkPwrHN4qON2KKXZLjsGxMs0nNjW10TDQrYkzVs'); // Ganti dengan token yang sesuai
+            $curl = curl_init();
 
-        // Tentukan apakah input login berupa email atau username
-        $fieldType = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+            // Header Authorization dengan token
+            $auth_data = array(
+                'Bearer:' . $token,
+            );
 
-        // Coba login dengan guard default (web)
-        if (Auth::attempt([$fieldType => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
-            $request->session()->regenerate();
+            // Data yang dikirimkan
+            $data = array(
+                'kopeg' => ($request->kopeg),
+                'password' => ($request->password)
+            );
 
-            $user = Auth::user();
+            // Encode data menjadi JSON
+            $body = json_encode($data);
 
-            // Jika user role-nya Pegawai (role_id = 2)
-            if ($user->role_id == 2) {
-                Log::info('Pegawai logged in from QR scan', [
-                    'pegawai_id' => $user->id,
-                    'tamu_id' => $id
-                ]);
+            // Set cURL options
+            curl_setopt($curl, CURLOPT_URL, 'https://hadir.jasatirta1.co.id/api/login');
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $auth_data); // Header Authorization
+            curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $body); // Kirimkan data JSON sebagai body
+            curl_setopt($curl, CURLOPT_TIMEOUT, 10); // timeout optional, untuk keamanan
 
-                // Redirect ke halaman detail tamu / approval
-                return redirect()->route('pegawai.show', $id)
-                    ->with('success', 'Tamu berhasil check-in melalui QR.');
+            // Eksekusi cURL
+            $result = curl_exec($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+
+            if (!$result) {
+                throw new \Exception('Gagal menghubungi server API');
             }
 
-            // Kalau bukan Pegawai, logout dan beri error
-            Auth::logout();
-            return back()->withErrors([
-                'login' => 'Hanya pegawai yang dapat melakukan approval melalui QR.',
-            ]);
-        }
+            if ($httpCode !== 200) {
+                throw new \Exception('Server API mengembalikan status ' . $httpCode);
+            }
 
-        // Jika login gagal
-        return back()->withErrors([
-            'login' => 'Email/Username atau password salah.',
-        ])->withInput();
+            $response = json_decode($result, true);
+
+            if (isset($response['status']) && $response['status'] === true) {
+                $personal = $response['data']['personal_data'];
+
+                    $user = UserModel::firstOrCreate(
+                        [
+                            'kopeg' => $personal['kopeg'],
+                            'name' => $personal['full_name'],
+                        ],
+                        [
+                            'email' => $personal['email'] ?? null,
+                            'password' => bcrypt(\Str::random(12)),
+                            'role' => 2,
+                        ]
+                    );
+
+                Auth::login($user);
+                $request->session()->regenerate();
+
+                return redirect()->intended($this->redirectTo);
+            }
+            // Jika login gagal (status false)
+            return back()->withErrors([
+                'kopeg' => 'Login gagal. Periksa kembali data Anda.',
+            ])->withInput();
+        } catch (\Exception $e) {
+            Log::error('Login API error: ' . $e->getMessage());
+
+            return back()->withErrors([
+                'kopeg' => 'Terjadi kesalahan saat menghubungi sistem Hadir. Silakan coba lagi nanti.',
+            ])->withInput();
+        }
     }
 
 
-    // Logout
+    /**
+     * Logout user safely
+     */
     public function logout(Request $request)
     {
         Auth::logout();
@@ -106,6 +247,16 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('tamu.index'); // balik ke tamu/register
+        return redirect('/login')->with('status', 'Anda telah logout.');
     }
+
+
+    // Logout
+    // public function logout(Request $request)
+    // {
+    //     Auth::logout();
+    //     $request->session()->invalidate();
+    //     $request->session()->regenerateToken();
+    //     return redirect()->route('tamu.index'); // balik ke halaman tamu/register
+    // }
 }

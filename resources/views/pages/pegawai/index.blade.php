@@ -216,11 +216,11 @@
                             '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
                             '    <select id="statusFilter" class="form-select">' +
                             '      <option value="">Semua Status</option>' +
-                            '      <option value="belum_checkin">Belum Checkin</option>' +
+                            // '      <option value="belum_checkin">Belum Checkin</option>' +
                             '      <option value="checkin">Checkin</option>' +
                             '      <option value="approved">Approved</option>' +
                             // '      <option value="rejected">Rejected</option>' +
-                            '      <option value="checked_out">Checked Out</option>' +
+                            // '      <option value="checked_out">Checked Out</option>' +
                             '    </select>' +
                             '  </div>' +
                             '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
