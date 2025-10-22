@@ -11,46 +11,9 @@
     class UserController extends \Illuminate\Routing\Controller
     {
         public function __construct()
-        {
-            // Middleware biar hanya Admin (role_id = 1) yang bisa create user
-            // $this->middleware(function ($request, $next) {
-            //     if (in_array($request->route()->getActionMethod(), ['create', 'store'])) {
-            //         if (Auth::user()->role_id != 1) {
-            //             abort(403, 'Hanya Administrator yang dapat membuat user.');
-            //         }
-            //     }
-            //     return $next($request);
-            // });
-            
+        {   
             $this->middleware('auth');
         }
-
-        // Tampilkan semua user
-        // public function index()
-        // {
-        //     $users = UserModel::with('role')
-        //         ->when(request('search'), function($query) {
-        //             $query->where('name', 'like', '%' . request('search') . '%')
-        //                 ->orWhere('email', 'like', '%' . request('search') . '%');
-        //         })
-        //         ->when(request('role_filter'), function($query) {
-        //             $query->where('role_id', request('role_filter'));
-        //         })
-        //         ->orderBy('created_at', 'desc')
-        //         ->paginate(10); // Changed from get() to paginate()
-            
-        //     // Get role statistics for the cards
-        //     $stats = [
-        //         'admin' => UserModel::where('role_id', 1)->count(),
-        //         'pegawai' => UserModel::where('role_id', 2)->count(),
-        //         'security' => UserModel::where('role_id', 3)->count(),
-        //     ];
-            
-        //     // Get all roles for filter dropdown
-        //     $roles = RoleModel::all(); // Or RoleModel::all() depending on your model name
-            
-        //     return view('pages.user.index', compact('users', 'stats', 'roles'));
-        // }
 
         public function index(Request $request)
         {
@@ -61,7 +24,8 @@
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('kopeg', 'like', '%' . $search . '%');
                 });
             }
 
@@ -105,6 +69,8 @@
             $request->validate([
                 'name'     => 'required|string|max:255',
                 'email'    => 'required|email|unique:users',
+                'phone'         => 'required|string|max:20',
+                'kopeg'         => 'required|string|max:50|unique:users',
                 'password' => 'required|min:5',
                 'role_id'  => 'required|in:2,3', // admin tidak boleh buat admin baru
             ]);
@@ -112,6 +78,8 @@
             UserModel::create([
                 'name'     => $request->name,
                 'email'    => $request->email,
+                'phone'    => $request->phone,
+                'kopeg'    => strtoupper($request->kopeg),
                 'password' => Hash::make($request->password),
                 'role_id'  => $request->role_id,
             ]);
@@ -127,7 +95,8 @@
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('kopeg', 'like', '%' . $search . '%');
                 });
             }
 
@@ -180,10 +149,12 @@
             $request->validate([
                 'name'  => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $id,
+                'phone'         => 'required|string|max:20',
+                'kopeg'         => 'required|string|max:50|unique:users,kopeg,' . $id,
                 'role_id' => 'required|in:1,2,3',
             ]);
 
-            $data = $request->only(['name', 'email', 'role_id']);
+            $data = $request->only(['name', 'email', 'phone', 'role_id']);
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
             }

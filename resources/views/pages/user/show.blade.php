@@ -78,6 +78,16 @@
                         <h4 class="mb-3">{{ $user->name }}</h4>
                         
                         <div class="info-section">
+
+                            <div class="col-md-6 mb-4">
+                                <label class="text-muted small mb-1">
+                                    <i class="mdi mdi-badge-account me-1"></i>
+                                    Kode Pegawai
+                                </label>
+                                <h6 class="mb-0">
+                                    <span class="badge bg-dark">{{ $user->kopeg }}</span>
+                                </h6>
+                            </div>
                             <!-- Email -->
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-start">

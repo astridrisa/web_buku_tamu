@@ -60,6 +60,29 @@
                             @enderror
                         </div>
 
+                        <!-- Kode Pegawai -->
+                        <div class="col-md-6 mb-3">
+                            <label for="kopeg" class="form-label">
+                                Kode Pegawai <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="mdi mdi-badge-account"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control @error('kopeg') is-invalid @enderror" 
+                                       id="kopeg" 
+                                       name="kopeg" 
+                                       value="{{ old('kopeg', $user->kopeg) }}" 
+                                       placeholder="Contoh: PEGAWAI1"
+                                       required>
+                            </div>
+                            @error('kopeg')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Kode unik untuk identifikasi pegawai</small>
+                        </div>
+
                         <!-- Email -->
                         <div class="col-md-12 mb-3">
                             <label for="email" class="form-label">
@@ -245,30 +268,40 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = document.getElementById(fieldId + '-icon');
-    
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('mdi-eye');
-        icon.classList.add('mdi-eye-off');
-    } else {
-        field.type = 'password';
-        icon.classList.remove('mdi-eye-off');
-        icon.classList.add('mdi-eye');
-    }
-}
-</script>
-@endpush
-
 @push('styles')
 <style>
 .card {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
+    border-radius: 8px;
+}
+
+.photo-preview-container {
+    display: inline-block;
+}
+
+.photo-preview {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #ffc107;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-preview i {
+    font-size: 80px;
+    color: #dee2e6;
 }
 
 .input-group-text {
@@ -284,4 +317,77 @@ function togglePassword(fieldId) {
     font-weight: 600;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+$(document).ready(function () {
+    // Preview foto
+    $('#profile_photo').on('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validasi ukuran
+            if (file.size > 2048000) {
+                alert('Ukuran file terlalu besar. Maksimal 2MB');
+                $(this).val('');
+                return;
+            }
+
+            // Validasi tipe file
+            if (!file.type.match('image.*')) {
+                alert('File harus berupa gambar');
+                $(this).val('');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#photoPreview').html(`<img src="${e.target.result}" alt="Preview">`);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Format nomor telepon
+    $('#phone').on('input', function () {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length > 0 && value.startsWith('8')) {
+            value = '0' + value;
+        }
+        $(this).val(value);
+    });
+
+    // Toggle password visibility
+    $('#togglePassword').on('click', function () {
+        const passwordField = $('#password');
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('mdi-eye').addClass('mdi-eye-off');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('mdi-eye-off').addClass('mdi-eye');
+        }
+    });
+
+    $('#togglePasswordConfirm').on('click', function () {
+        const passwordField = $('#password_confirmation');
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('mdi-eye').addClass('mdi-eye-off');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('mdi-eye-off').addClass('mdi-eye');
+        }
+    });
+
+    // Uppercase kode pegawai
+    $('#kopeg').on('input', function() {
+        $(this).val($(this).val().toUpperCase());
+    });
+});
+</script>
 @endpush

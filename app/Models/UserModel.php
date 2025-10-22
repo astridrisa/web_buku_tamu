@@ -15,6 +15,7 @@ class UserModel extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',       
         'password',
         'kopeg',        // 🔹 tambahkan ini
         'role_id',
