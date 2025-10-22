@@ -234,7 +234,7 @@ class SecurityController extends Controller
         $tamu = TamuModel::findOrFail($id);
         
         if ($tamu->status !== 'approved') {
-            return response()->json(['success' => false, 'message' => 'Tamu belum disetujui pegawai']);
+             return redirect()->back()->with('warning', 'Tamu belum disetujui pegawai.');
         }
 
         $tamu->update([
@@ -243,7 +243,7 @@ class SecurityController extends Controller
             'checkout_by' => (int) Auth::user()->id
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Tamu berhasil checkout']);
+        return redirect()->back()->with('success', 'Tamu berhasil checkout.');
     }
 
     /**

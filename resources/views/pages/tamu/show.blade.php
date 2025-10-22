@@ -266,6 +266,22 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="mdi mdi-check-circle-outline me-2"></i>
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if (session('warning'))
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="mdi mdi-alert-outline me-2"></i>
+                            {{ session('warning') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+                    
                     @if($tamu->status == 'belum_checkin')
                         <form action="{{ route('security.checkin', $tamu->id) }}" method="POST">
                             @csrf

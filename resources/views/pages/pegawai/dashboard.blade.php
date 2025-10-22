@@ -26,6 +26,44 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="mb-0"><i class="mdi mdi-lightning-bolt me-2"></i>Aksi Cepat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ route('pegawai.approval') }}" class="btn btn-outline-primary w-100 py-3 position-relative">
+                                <i class="mdi mdi-clock-check-outline d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Approval Tamu</span>
+                                @if($stats['pending_approval'] > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ $stats['pending_approval'] }}
+                                    </span>
+                                @endif
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ route('profile.index') }}" class="btn btn-outline-info w-100 py-3">
+                                <i class="mdi mdi-account-cog d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Pengaturan</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-success w-100 py-3">
+                                <i class="mdi mdi-refresh d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Refresh Data</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6 col-xl-3 mb-4">
@@ -259,44 +297,6 @@
                     <button class="btn btn-sm btn-outline-primary">
                         <i class="mdi mdi-phone me-1"></i>Hubungi Support
                     </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-gradient-info text-white">
-                    <h5 class="mb-0"><i class="mdi mdi-lightning-bolt me-2"></i>Aksi Cepat</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4 mb-3 mb-md-0">
-                            <a href="{{ route('pegawai.approval') }}" class="btn btn-outline-primary w-100 py-3 position-relative">
-                                <i class="mdi mdi-clock-check-outline d-block mb-2" style="font-size: 2rem;"></i>
-                                <span class="fw-bold">Approval Tamu</span>
-                                @if($stats['pending_approval'] > 0)
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                        {{ $stats['pending_approval'] }}
-                                    </span>
-                                @endif
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3 mb-md-0">
-                            <a href="{{ route('pegawai.notifications') }}" class="btn btn-outline-info w-100 py-3">
-                                <i class="mdi mdi-bell-outline d-block mb-2" style="font-size: 2rem;"></i>
-                                <span class="fw-bold">Notifikasi</span>
-                            </a>
-                        </div>
-                        <div class="col-md-4">
-                            <a href="{{ route('pegawai.dashboard') }}" class="btn btn-outline-success w-100 py-3">
-                                <i class="mdi mdi-refresh d-block mb-2" style="font-size: 2rem;"></i>
-                                <span class="fw-bold">Refresh Data</span>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
