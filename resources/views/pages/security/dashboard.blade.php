@@ -26,6 +26,40 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
+    <!-- Quick Actions -->
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-warning text-white">
+                    <h5 class="mb-0"><i class="mdi mdi-lightning-bolt me-2"></i>Aksi Cepat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ route('security.create') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="mdi mdi-account-plus d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Tambah Tamu</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ route('security.list') }}" class="btn btn-outline-info w-100 py-3">
+                                <i class="mdi mdi-format-list-bulleted d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Daftar Tamu</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ route('profile.index') }}" class="btn btn-outline-success w-100 py-3">
+                                <i class="mdi mdi-account-cog d-block mb-2" style="font-size: 2rem;"></i>
+                                <span class="fw-bold">Pengaturan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6 col-xl-3 mb-4">
@@ -208,33 +242,6 @@
                         <i class="mdi mdi-alert-circle-outline me-2"></i>Peringatan Keamanan
                     </h6>
                     <p class="small text-muted mb-0">Segera hubungi supervisor jika menemukan aktivitas mencurigakan atau tamu yang tidak terdaftar.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-gradient-success text-white">
-                    <h5 class="mb-0"><i class="mdi mdi-lightning-bolt me-2"></i>Aksi Cepat</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3 mb-md-0">
-                            <a href="{{ route('security.create') }}" class="btn btn-outline-primary w-100 py-3">
-                                <i class="mdi mdi-account-plus d-block mb-2" style="font-size: 2rem;"></i>
-                                <span class="fw-bold">Tambah Tamu</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3 mb-md-0">
-                            <a href="{{ route('security.list') }}" class="btn btn-outline-info w-100 py-3">
-                                <i class="mdi mdi-format-list-bulleted d-block mb-2" style="font-size: 2rem;"></i>
-                                <span class="fw-bold">Daftar Tamu</span>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
