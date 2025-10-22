@@ -206,13 +206,9 @@ class SecurityController extends Controller
             $qrCodePath = $this->qrCodeService->generateTamuQrCode($tamu);
             Log::info("QR Code generated at: {$qrCodePath}");
 
-            // KIRIM EMAIL KE TAMU
+            // 📧 Kirim email ke tamu dengan QR baru
             Mail::to($tamu->email)->send(new TamuQrCodeMail($tamu, $qrCodePath));
             Log::info("Email sent to: {$tamu->email}");
-
-            // Hapus QR code lama untuk hemat storage (optional)
-            // $this->qrCodeService->deleteOldQrCodes($tamu->id);
-
         } catch (\Exception $e) {
             Log::error("Error sending email: " . $e->getMessage());
             // Tidak return error, karena checkin sudah berhasil
