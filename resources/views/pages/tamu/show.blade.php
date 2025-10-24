@@ -18,20 +18,25 @@
 
                 <!-- Foto Tamu -->
                 <div class="text-center mb-4">
-                    <div class="tamu-photo-display">
+                    {{-- <div class="tamu-photo-display">
                         @if($tamu->foto)
                             <img src="{{ asset('storage/' . $tamu->foto) }}" alt="{{ $tamu->nama }}">
                         @else
                             <div class="no-photo">
-                                <i class="mdi mdi-account-circle"></i>
+                                <p class="text-muted mb-0">Tidak ada foto yang diupload</p>
                             </div>
                         @endif
-                    </div>
-                    {{-- <h4 class="mt-3 mb-1">{{ $tamu->nama }}</h4>
-                    <p class="text-muted">{{ $tamu->email }}</p> --}}
+                    </div> --}}
+
+                    @if($tamu->foto)
+                        <div class="text-center mb-4">
+                            <div class="tamu-photo-display">
+                                <img src="{{ asset('storage/' . $tamu->foto) }}" alt="{{ $tamu->nama }}">
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
-                <hr>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="mb-3">
