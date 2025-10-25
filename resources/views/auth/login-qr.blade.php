@@ -198,14 +198,24 @@
         }
 
         .qr-indicator {
-            background: linear-gradient(45deg, #ffc107, #ff9800);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
+            background: transparent;
+            color: #6c757d;
+            padding: 8px 0;
             text-align: center;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            border-top: 1px dashed #dee2e6;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .qr-indicator i {
+            font-size: 14px;
+            color: #9ca3af;
         }
     </style>
 </head>
