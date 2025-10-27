@@ -66,12 +66,6 @@
                                 <td>{{ $tamu->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        @if($tamu->status === 'checkin')
-                                            <button type="button" class="btn btn-outline-primary approve-btn"
-                                                data-id="{{ $tamu->id }}" data-name="{{ $tamu->nama }}" title="Approve">
-                                                <i class="mdi mdi-check-circle"></i>
-                                            </button>
-                                        @endif
 
                                         <button type="button"
                                             class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
@@ -85,13 +79,7 @@
                                                     Lihat Detail
                                                 </a>
                                             </li>
-                                            {{-- <li>
-                                                <a class="dropdown-item" href="{{ route('pegawai.edit', $tamu->id) }}">
-                                                    <i class="mdi mdi-pencil me-2 text-warning"></i>
-                                                    Edit
-                                                </a>
-                                            </li>
-                                            <li> --}}
+                                            <li> 
                                                 <hr class="dropdown-divider">
                                             </li>
                                             <li>
@@ -182,16 +170,16 @@
                         }
                     ],
 
-                    drawCallback: function() {
-                            var api = this.api();
-                            var startIndex = api.page.info().start;
-                            
-                            api.column(0, {page: 'current'}).nodes().each(function(cell, i) {
-                                cell.innerHTML = startIndex + i + 1;
-                            });
+                    drawCallback: function () {
+                        var api = this.api();
+                        var startIndex = api.page.info().start;
+
+                        api.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                            cell.innerHTML = startIndex + i + 1;
+                        });
                     },
 
-                    
+
                     initComplete: function () {
                         var api = this.api();
 
@@ -209,38 +197,18 @@
                         $search.wrap('<div class="input-group"></div>');
                         $search.after('<button class="btn btn-outline-primary" type="button"><i class="mdi mdi-magnify"></i></button>');
 
-                        // Tambahin filter status manual
-                        var filterHtml = $(
-                            '<div class="d-flex align-items-end mb-3">' +
-                            '  <div class="form-group mb-0 me-4" style="min-width: 200px;">' +
-                            '    <label class="form-label"><i class="mdi mdi-shield-account me-1"></i> Filter Status</label>' +
-                            '    <select id="statusFilter" class="form-select">' +
-                            '      <option value="">Semua Status</option>' +
-                            // '      <option value="belum_checkin">Belum Checkin</option>' +
-                            '      <option value="checkin">Checkin</option>' +
-                            '      <option value="approved">Approved</option>' +
-                            // '      <option value="rejected">Rejected</option>' +
-                            // '      <option value="checked_out">Checked Out</option>' +
-                            '    </select>' +
-                            '  </div>' +
-                            '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
-                            '    <i class="mdi mdi-refresh"></i> Refresh' +
-                            '  </button>' +
-                            '</div>'
-                        );
+                        // ✅ HANYA tombol refresh — tanpa dropdown filter status
+                        //var refreshBtn = $(
+                        //    '<div class="d-flex align-items-end mb-3">' +
+                        //   '  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">' +
+                        //   '    <i class="mdi mdi-refresh"></i> Refresh' +
+                        //   '  </button>' +
+                        //   '</div>'
+                        //);
 
-                        $('#recentGuestsTable_filter').after(filterHtml);
-
-                        // Event filter status (gunakan regex search)
-                        $('#statusFilter').on('change', function () {
-                            var val = $(this).val();
-                            if (val === '') {
-                                api.column(5).search('').draw();
-                            } else {
-                                api.column(5).search(val, true, false).draw();
-                            }
-                        });
+                        $('#recentGuestsTable_filter').after(refreshBtn);
                     },
+
                     language: {
                         search: "",
                         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
@@ -256,90 +224,12 @@
                 });
 
                 // ========== APPROVE BUTTON HANDLER ==========
-                $(document).on('click', '.approve-btn', function () {
-                    let button = $(this);
-                    let tamuId = button.data('id');
-                    let tamuName = button.data('name');
-                    let row = button.closest('tr');
-
-                    button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i> Processing...');
-
-                    $.ajax({
-                        url: "{{ route('pegawai.tamu.approve', ':id') }}".replace(':id', tamuId),
-                        method: 'POST',
-                        success: function (response) {
-                            if (response.success) {
-                                showAlert('success', response.message);
-
-                                // Update badge status (kolom index 5)
-                                row.find('td:eq(5)').html('<span class="badge bg-warning">Approved</span>');
-
-                                // Replace button dengan Checkout button
-                                let actionCell = row.find('td:last');
-                                actionCell.html(`
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-danger checkout-btn" 
-                                                    data-id="${tamuId}" 
-                                                    data-name="${tamuName}">
-                                                <i class="mdi mdi-logout me-1"></i> Check Out
-                                            </button>
-                                        </div>
-                                    `);
-                            } else {
-                                showAlert('danger', response.message);
-                                button.prop('disabled', false).html('<i class="mdi mdi-check-circle me-1"></i> Approve');
-                            }
-                        },
-                        error: function (xhr) {
-                            console.error(xhr.responseText);
-                            showAlert('danger', 'Terjadi kesalahan saat approve tamu');
-                            button.prop('disabled', false).html('<i class="mdi mdi-check-circle me-1"></i> Approve');
-                        }
-                    });
-                });
+                
 
                 // ========== CHECKOUT BUTTON HANDLER ==========
-                $(document).on('click', '.checkout-btn', function () {
-                    let button = $(this);
-                    let tamuId = button.data('id');
-                    let tamuName = button.data('name');
-                    let row = button.closest('tr');
+              
 
-                    if (!confirm(`Yakin checkout ${tamuName}?`)) {
-                        return;
-                    }
-
-                    button.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i> Processing...');
-
-                    $.ajax({
-                        url: "{{ route('security.checkout', ':id') }}".replace(':id', tamuId),
-                        method: 'POST',
-                        success: function (response) {
-                            if (response.success) {
-                                showAlert('success', response.message);
-
-                                // Update badge status
-                                row.find('td:eq(5)').html('<span class="badge bg-secondary">Checkout</span>');
-
-                                // Disable button
-                                button.removeClass('btn-danger')
-                                    .addClass('btn-secondary')
-                                    .html('<i class="mdi mdi-check"></i> Completed')
-                                    .prop('disabled', true);
-                            } else {
-                                showAlert('danger', response.message);
-                                button.prop('disabled', false).html('<i class="mdi mdi-logout me-1"></i> Check Out');
-                            }
-                        },
-                        error: function (xhr) {
-                            console.error(xhr.responseText);
-                            showAlert('danger', 'Terjadi kesalahan saat checkout tamu');
-                            button.prop('disabled', false).html('<i class="mdi mdi-logout me-1"></i> Check Out');
-                        }
-                    });
-                });
-
-                               // ========== DELETE BUTTON HANDLER ==========
+                // ========== DELETE BUTTON HANDLER ==========
                 $(document).on('click', '.btn-delete', function () {
                     const tamuId = $(this).data('id');
                     const tamuName = $(this).data('name');
@@ -382,10 +272,10 @@
                 // ========== ALERT FUNCTION ==========
                 function showAlert(type, message) {
                     const alertHtml = `
-                            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                                ${message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>`;
+                                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                        ${message}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>`;
                     $('main').prepend(alertHtml);
                     setTimeout(() => $('.alert').fadeOut(), 5000);
                 }
@@ -393,15 +283,15 @@
                 // ========== QR CODE FUNCTION ==========
                 function showQrCode(qrUrl, tamuName) {
                     const qrContent = `
-                            <div id="printArea">
-                                <h5>${tamuName}</h5>
-                                <div class="mb-3">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                                         alt="QR Code" class="img-fluid">
-                                </div>
-                                <p class="small">Tunjukkan QR Code ini ke pegawai</p>
-                                <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
-                            </div>`;
+                                    <div id="printArea">
+                                        <h5>${tamuName}</h5>
+                                        <div class="mb-3">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+                                                 alt="QR Code" class="img-fluid">
+                                        </div>
+                                        <p class="small">Tunjukkan QR Code ini ke pegawai</p>
+                                        <p class="small text-muted">${new Date().toLocaleString('id-ID')}</p>
+                                    </div>`;
                     $('#qrContent').html(qrContent);
                     $('#qrModal').modal('show');
                 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TamuModel;
+use App\Models\UserModel;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,14 +59,14 @@ class PegawaiController extends BaseController
 
 
     // List tamu dengan pagination
-    public function list()
-    {
-        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-                     ->orderBy('created_at', 'desc')
-                     ->paginate(10);
+    // public function list()
+    // {
+    //     $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+    //                  ->orderBy('created_at', 'desc')
+    //                  ->paginate(10);
         
-        return view('pages.pegawai.tamu.index', compact('tamus'));
-    }
+    //     return view('pages.pegawai.tamu.index', compact('tamus'));
+    // }
 
     // Detail tamu
     public function show($id)
@@ -125,29 +126,31 @@ class PegawaiController extends BaseController
         }
     }
 
-    public function approval()
-    {
-        // Tampilkan tamu dengan status 'checkin' DAN 'approved'
-        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
-            ->whereIn('status', ['checkin', 'approved']) // checkin + approved tetap muncul
-            ->orderBy('checkin_at', 'desc')
-            ->paginate(10);
-        
-        // Stats untuk badge
-        $stats = [
-            'menunggu_approval' => TamuModel::where('status', 'checkin')->count(),
-            'approved' => TamuModel::where('status', 'approved')->count(),
-            'total' => TamuModel::whereIn('status', ['checkin', 'approved'])->count(),
-        ];
-        
-        Log::info('Pegawai approval page loaded', [
-            'menunggu_approval' => $stats['menunggu_approval'],
-            'sudah_approved' => $stats['approved'],
-            'total_ditampilkan' => $tamus->total()
-        ]);
-        
-        return view('pages.pegawai.index', compact('tamus', 'stats'));
-    }
+public function approval()
+{
+    // Ambil ID user login
+    $userName = auth()->user()->name;
+    $userId   = UserModel::where('name', $userName)->value('id');
+
+    // Ambil semua tamu yang status approved (semua kolom)
+    $tamus = TamuModel::approved()->get();
+
+    // Filter collection di PHP berdasarkan user login
+    $tamusForUser = $tamus->filter(fn($tamu) => $tamu->approved_by == $userId);
+
+    // Siapkan stats
+    $stats = [
+        'approved' => $tamusForUser->count()
+    ];
+
+    return view('pages.pegawai.index', [
+        'tamus' => $tamusForUser,
+        'stats' => $stats
+    ]);
+}
+
+
+    
     // Approve tamu yang sudah checkin
     public function approve($id)
     {

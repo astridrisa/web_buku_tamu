@@ -68,35 +68,42 @@ class TamuModel extends Model
     }
 
     // warna status   
-public function getStatusColorAttribute()
-{
-    return match($this->status) {
-        'belum_checkin' => 'warning',
-        'checkin' => 'success',
-        'approved' => 'primary',
-        'checkout' => 'danger',
-        default => 'dark',
-    };
-}
-
-public function getStatusTextAttribute()
-{
-    return match($this->status) {
-        'belum_checkin' => 'Belum Checkin',
-        'checkin' => 'Checkin',
-        'approved' => 'Approved',
-        'checkout' => 'Checkout',
-        default => 'Unknown',
-    };
-}
-
-// Accessor untuk URL foto
-public function getFotoUrlAttribute()
-{
-    if ($this->foto) {
-        return asset('storage/' . $this->foto);
+    public function getStatusColorAttribute()
+    {
+        return match($this->status) {
+            'belum_checkin' => 'warning',
+            'checkin' => 'success',
+            'approved' => 'primary',
+            'checkout' => 'danger',
+            default => 'dark',
+        };
     }
-    return asset('img/default-avatar.png');
+
+    public function getStatusTextAttribute()
+    {
+        return match($this->status) {
+            'belum_checkin' => 'Belum Checkin',
+            'checkin' => 'Checkin',
+            'approved' => 'Approved',
+            'checkout' => 'Checkout',
+            default => 'Unknown',
+        };
+    }
+
+    // Accessor untuk URL foto
+    public function getFotoUrlAttribute()
+    {
+        if ($this->foto) {
+            return asset('storage/' . $this->foto);
+        }
+        return asset('img/default-avatar.png');
+    }
+
+    public function scopeApproved($query)
+{
+    // ambil semua kolom, tapi hanya yang statusnya approved
+    return $query->where('status', 'approved');
 }
+
 
 }

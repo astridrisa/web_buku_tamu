@@ -214,7 +214,7 @@ class AuthController extends Controller
                         [
                             'email' => $personal['email'] ?? null,
                             'password' => bcrypt(\Str::random(12)),
-                            'role' => 2,
+                            'role_id' => 2,
                         ]
                     );
 
