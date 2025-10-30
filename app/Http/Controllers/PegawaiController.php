@@ -26,6 +26,9 @@ class PegawaiController extends BaseController
         $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                         ->orderBy('created_at', 'desc')
                         ->get();
+
+        // Total semua orang yang datang (hitung jumlah rombongan)
+        $totalPengunjung = $tamus->sum('jumlah_rombongan');
         
         // Pending approval = tamu yang sudah checkin tapi belum diverifikasi
         $pendingApproval = $tamus->where('status', 'checkin')->count();
@@ -50,6 +53,7 @@ class PegawaiController extends BaseController
 
         $stats = [
             'total' => $tamus->count(),
+            'total_pengunjung' => $totalPengunjung,
             'belum_checkin' => $tamus->where('status', 'belum_checkin')->count(),
             'checkin' => $tamus->where('status', 'checkin')->count(),
             'approved' => $tamus->where('status', 'approved')->count(),
