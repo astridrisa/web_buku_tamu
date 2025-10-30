@@ -15,12 +15,18 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('tamu.index');
+    return redirect()->route('tamu.tutorial');
 });
+
+Route::get('/tutorial', function () {
+    return view('pages.tamu.tutorial');
+})->name('tamu.tutorial');
 
 // Tamu registration routes - bisa diakses semua orang
 Route::get('/register', [TamuController::class, 'index'])->name('tamu.index');
 Route::post('/register', [TamuController::class, 'store'])->name('tamu.store');
+Route::get('/register/success/{id}', [TamuController::class, 'success'])->name('tamu.success');
+
 
 // Auth routes - hanya untuk guest (belum login)
 Route::middleware('guest')->group(function () {

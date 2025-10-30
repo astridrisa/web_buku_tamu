@@ -709,7 +709,7 @@
         });
         
         $('#registrationForm').on('submit', function(e) {
-            e.preventDefault();
+            // e.preventDefault();
 
             // Validasi privacy consent
             if (!$('#privacyConsent').is(':checked')) {

@@ -103,11 +103,16 @@ class TamuController extends Controller
 
             // Log::info('Tamu created successfully:', $tamu->toArray());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Registrasi tamu berhasil',
-                'tamu' => $tamu
-            ], 201);
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'Registrasi tamu berhasil',
+            //     'tamu' => $tamu,
+            //     'redirect_url' => route('tamu.success', $tamu->id)
+            // ], 201);
+
+             return redirect()
+            ->route('tamu.success', $tamu->id)
+            ->with('success', 'Registrasi tamu berhasil!');
 
         } catch (\Exception $e) {
             // Log error untuk debugging
@@ -120,6 +125,12 @@ class TamuController extends Controller
                 'message' => 'Terjadi kesalahan server: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function success($id)
+    {
+        $tamu = TamuModel::with('jenisIdentitas')->findOrFail($id);
+        return view('pages.tamu.success', compact('tamu'));
     }
 
     public function showQrCode($qrCode)
