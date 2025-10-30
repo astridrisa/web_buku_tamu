@@ -38,6 +38,11 @@ class PegawaiController extends BaseController
         // Total disetujui
         $totalApproved = $tamus->where('status', 'approved')->count();
 
+        // Total tamu bulan ini
+        $tamuBulanIni = $tamus->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                            ->count();
+
+
         // Hitung approval rate
         $approvalRate = $tamus->count() > 0 
             ? round(($totalApproved / $tamus->count()) * 100, 1)
@@ -52,6 +57,8 @@ class PegawaiController extends BaseController
             'approved_today' => $approvedToday,
             'total_approved' => $totalApproved,
             'approval_rate' => $approvalRate,
+            'tamu_bulan_ini' => $tamuBulanIni,
+
         ];
 
         return view('pages.pegawai.dashboard', compact('tamus', 'stats'));
