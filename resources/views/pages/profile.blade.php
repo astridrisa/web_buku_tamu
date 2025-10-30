@@ -37,7 +37,12 @@
                                 class="form-control mb-3">
                             <input type="email" name="email" value="{{ old('email', $user->email) }}" required
                                 class="form-control mb-3">
-
+                            <div class="mb-4">
+                                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#ubahPasswordModal">
+                                    Ubah Password
+                                </button>
+                            </div>
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         </form>
 
@@ -112,7 +117,7 @@
                             </button>
                         </form>
                     </div>
-                </div> --}}
+                </div> --}} 
 
             </div>
         </div>
