@@ -334,10 +334,13 @@
                     <i class="mdi mdi-help-circle-outline text-primary mb-2" style="font-size: 3rem;"></i>
                     <h6 class="fw-bold mb-2">Butuh Bantuan?</h6>
                     <p class="small text-muted mb-3">Hubungi admin atau IT support jika mengalami kendala</p>
-                    <button class="btn btn-sm btn-outline-primary">
+                        <a href="https://jasatirta1.co.id/" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="mdi mdi-phone me-1"></i>Hubungi Support
+                        </a>
+                    {{-- <button class="btn btn-sm btn-outline-primary">
                         <i class="mdi mdi-phone me-1"></i>Hubungi Support
                     </button>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
