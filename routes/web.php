@@ -96,6 +96,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', function() {
             return app(DashboardController::class)->pegawaiDashboard();
         })->name('dashboard');
+
+        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
+        ->name('tamu.approve');
+
         
         // Pegawai specific routes bisa ditambah disini
         Route::get('/approval', [PegawaiController::class, 'approval'])->name('approval');
@@ -105,9 +109,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/notifications/{id}/read', [PegawaiController::class, 'markNotificationRead'])->name('notifications.read');
         Route::post('/notifications/mark-all-read', [PegawaiController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
 
-            
-        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
-        ->name('tamu.approve');
 
         Route::get('/{id}', [PegawaiController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [PegawaiController::class, 'edit'])->name('edit');

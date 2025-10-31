@@ -40,6 +40,7 @@ class TamuModel extends Model
     protected $casts = [
         'checkin_at' => 'datetime',
         'checkout_at' => 'datetime',
+        'approved_at' => 'datetime'
     ];
 
 
@@ -65,6 +66,57 @@ class TamuModel extends Model
     public function checkoutBy()
     {
         return $this->belongsTo(UserModel::class, 'checkout_by', 'id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(TamuApprovalModel::class, 'tamu_id')
+                    ->orderBy('approved_at', 'asc');
+    }
+
+    /**
+     * Relasi many-to-many ke pegawai yang approve
+     */
+    public function approvedByPegawais()
+    {
+        return $this->belongsToMany(UserModel::class, 'tamu_approvals', 'tamu_id', 'pegawai_id')
+                    ->withTimestamps()
+                    ->withPivot('approved_at')
+                    ->as('approval')
+                    ->orderByPivot('approved_at', 'asc');
+    }
+
+    // ===== HELPER METHODS =====
+
+    /**
+     * Cek apakah pegawai tertentu sudah approve
+     */
+    public function isApprovedBy($pegawaiId): bool
+    {
+        // Cek di table tamu_approvals
+        return TamuApprovalModel::where('tamu_id', $this->id)
+                          ->where('pegawai_id', $pegawaiId)
+                          ->exists();
+    }
+
+    /**
+     * Hitung jumlah pegawai yang sudah approve
+     */
+    public function getTotalApproversAttribute(): int
+    {
+        return TamuApprovalModel::where('tamu_id', $this->id)->count();
+    }
+
+    /**
+     * Daftar nama pegawai yang sudah approve
+     */
+    public function getApproverNamesAttribute(): array
+    {
+        return TamuApprovalModel::where('tamu_id', $this->id)
+                          ->with('pegawai')
+                          ->get()
+                          ->pluck('pegawai.name')
+                          ->toArray();
     }
 
     // warna status   
@@ -104,6 +156,16 @@ class TamuModel extends Model
     // ambil semua kolom, tapi hanya yang statusnya approved
     return $query->where('status', 'approved');
 }
+
+    /**
+     * Scope untuk tamu yang belum di-approve oleh pegawai tertentu
+     */
+    public function scopeNotApprovedBy($query, $pegawaiId)
+    {
+        return $query->whereDoesntHave('approvals', function($q) use ($pegawaiId) {
+            $q->where('pegawai_id', $pegawaiId);
+        });
+    }
 
 
 }

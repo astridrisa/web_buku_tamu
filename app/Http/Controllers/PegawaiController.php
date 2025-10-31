@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TamuModel;
+use App\Models\TamuApprovalModel;
 use App\Models\UserModel;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class PegawaiController extends BaseController
     // Halaman dashboard pegawai
     public function index()
     {
-        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy', 'approvals.pegawai'])
                         ->orderBy('created_at', 'desc')
                         ->get();
 
@@ -37,6 +38,9 @@ class PegawaiController extends BaseController
         $approvedToday = $tamus->where('status', 'approved')
                             ->whereBetween('updated_at', [now()->startOfDay(), now()->endOfDay()])
                             ->count();
+
+        // Total approval yang dilakukan oleh pegawai ini
+        $myApprovals = TamuApprovalModel::where('pegawai_id', auth()->id())->count();
 
         // Total disetujui
         $totalApproved = $tamus->where('status', 'approved')->count();
@@ -62,6 +66,7 @@ class PegawaiController extends BaseController
             'total_approved' => $totalApproved,
             'approval_rate' => $approvalRate,
             'tamu_bulan_ini' => $tamuBulanIni,
+            'my_approvals' => $myApprovals,
 
         ];
 
@@ -82,10 +87,13 @@ class PegawaiController extends BaseController
     // Detail tamu
     public function show($id)
     {
-        $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
+        $tamu = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy', 'approvals.pegawai'])
                     ->findOrFail($id);
+
+        $userId = auth()->user()->id;
+        $isApprovedByUser = $tamu->isApprovedBy($userId);
         
-        return view('pages.pegawai.show', compact('tamu'));
+        return view('pages.pegawai.show', compact('tamu', 'isApprovedByUser'));
     }
 
     public function edit($id)
@@ -137,75 +145,123 @@ class PegawaiController extends BaseController
         }
     }
 
-public function approval()
-{
-    // Ambil ID user login
-    $userName = auth()->user()->name;
-    $userId   = UserModel::where('name', $userName)->value('id');
+    public function approval()
+    {
+        // Ambil ID user login
+        $userName = auth()->user()->name;
+        $userId   = UserModel::where('name', $userName)->value('id');
 
-    // Ambil semua tamu yang status approved (semua kolom)
-    $tamus = TamuModel::approved()->get();
+        // Ambil semua tamu yang status approved (semua kolom)
+        // $tamus = TamuModel::approved()->get();
+        $tamus = TamuModel::with(['approvals.pegawai', 'jenisIdentitas', 'approvedBy'])
+                    ->whereIn('status', ['checkin', 'approved']) // PENTING: termasuk yang sudah approved
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function($tamu) use ($userId) {
+                        // Tambahkan info apakah user ini sudah approve
+                        $tamu->is_approved_by_me = $tamu->isApprovedBy($userId);
+                        return $tamu;
+                    });
 
-    // Filter collection di PHP berdasarkan user login
-    $tamusForUser = $tamus->filter(fn($tamu) => $tamu->approved_by == $userId);
+        // Filter collection di PHP berdasarkan user login
+        $tamusForUser = $tamus->filter(fn($tamu) => $tamu->isApprovedBy($userId));
 
-    // Siapkan stats
-    $stats = [
-        'approved' => $tamusForUser->count()
-    ];
+        // Siapkan stats
+        $stats = [
+            'approved' => $tamusForUser->count()
+        ];
 
-    return view('pages.pegawai.index', [
-        'tamus' => $tamusForUser,
-        'stats' => $stats
-    ]);
-}
+        return view('pages.pegawai.index', [
+            'tamus' => $tamusForUser,
+            'stats' => $stats
+        ]);
+    }
 
-
-    
     // Approve tamu yang sudah checkin
     public function approve($id)
     {
         try {
-            // cek dulu apakah datanya ketemu
-            $tamu = TamuModel::find($id);
+            // Cek apakah tamu ada
+            $tamu = TamuModel::with('approvals')->find($id);
+            
             if (!$tamu) {
-            return redirect()
-                ->route('pegawai.approval')
-                ->with('error', 'Data tamu tidak ditemukan');
+                return redirect()
+                    ->route('pegawai.approval')
+                    ->with('error', 'Data tamu tidak ditemukan');
             }
 
-            // debug: cek data tamu sebelum update
-            Log::info('Before update:', $tamu->toArray());
+            $userId = auth()->user()->id;
+            // Cek apakah pegawai ini sudah pernah approve
+            if ($tamu->isApprovedBy($userId)) {
+                return redirect()
+                    ->route('pegawai.approval')
+                    ->with('warning', "Anda sudah menyetujui kunjungan tamu {$tamu->nama} sebelumnya.");
+            }
 
-            
-            Log::info('DEBUG AUTH:', [
-           
-                'id' => auth()->id(),
-                'user' => auth()->user(),
-            ]);
+            // Cek status tamu - harus sudah checkin atau approved
+            if (!in_array($tamu->status, ['checkin', 'approved'])) {
+                return redirect()
+                    ->route('pegawai.approval')
+                    ->with('error', 'Tamu harus sudah checkin untuk bisa disetujui.');
+            }
 
-            $update = $tamu->update([
-                'status' => 'approved',
-                'approved_by' => auth()->user()->id,
+            // Tambahkan approval baru ke tabel tamu_approvals
+            TamuApprovalModel::create([
+                'tamu_id' => $tamu->id,
+                'pegawai_id' => $userId,
                 'approved_at' => now(),
+                'catatan' => request('catatan') // opsional dari form
             ]);
 
-            // 🔔 KIRIM NOTIFIKASI KE SECURITY
+            // Update status tamu menjadi 'approved' HANYA jika ini approval pertama
+            if ($tamu->status !== 'approved') {
+                $tamu->update([
+                    'status' => 'approved',
+                    'approved_by' => $userId, // first approver
+                    'approved_at' => now(),
+                ]);
+            }
+            // Jika sudah approved, TIDAK perlu update status lagi
+            // Cukup tambahkan record di tamu_approvals
+
+            // Reload untuk mendapatkan data terbaru
+            $tamu->load('approvals.pegawai');
+
+            // Log approval
+            Log::info('Tamu approved', [
+                'tamu_id' => $tamu->id,
+                'tamu_nama' => $tamu->nama,
+                'pegawai_id' => $userId,
+                'pegawai_name' => auth()->user()->name,
+                'total_approvers' => $tamu->approvals->count(),
+                'is_first_approval' => $tamu->approvals->count() == 1
+            ]);
+
+            // Kirim notifikasi ke security
             $this->notificationService->notifySecurityApproved($tamu);
-            Log::info('Notification sent to security for approved guest ID: ' . $tamu->id);
 
-            // debug: cek hasil update
-            Log::info('Update result:', [$update]);
-            Log::info('After update:', $tamu->fresh()->toArray());
+            // Pesan sukses
+            $totalApprovers = $tamu->approvals->count();
+            $message = "Kunjungan tamu {$tamu->nama} telah Anda setujui.";
+            
+            if ($totalApprovers > 1) {
+                $message .= " (Total {$totalApprovers} pegawai telah menyetujui)";
+            }
 
-             return redirect()
-            ->route('pegawai.approval')
-            ->with('success', "Kunjungan tamu {$tamu->nama} telah disetujui.");
-        } catch (\Exception $e) {
-            Log::error('Approve Error: ' . $e->getMessage());
             return redirect()
                 ->route('pegawai.approval')
-                ->with('error', 'Terjadi kesalahan saat menyetujui tamu.');
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Approve Error: ' . $e->getMessage(), [
+                'tamu_id' => $id,
+                'user_id' => auth()->user()->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()
+                ->route('pegawai.approval')
+                ->with('error', 'Terjadi kesalahan saat menyetujui tamu: ' . $e->getMessage());
         }
     }
 
@@ -213,64 +269,64 @@ public function approval()
      * Get notifications untuk pegawai
      */
     public function notifications()
-{
-    try {
-        $user = Auth::user();
-        
-        if (!$user) {
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak ditemukan',
+                    'notifications' => [],
+                    'unread_count' => 0
+                ], 401);
+            }
+
+            Log::info('Loading notifications for pegawai user: ' . $user->id);
+
+            // Ambil notifikasi langsung dari user object (sama seperti Security)
+            $notifications = $user->notifications()
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(function($notification) {
+                    $data = $notification->data;
+                    if (is_string($data)) {
+                        $data = json_decode($data, true);
+                    }
+                    
+                    return [
+                        'id' => $notification->id,
+                        'data' => $data ?: [],
+                        'read_at' => $notification->read_at,
+                        'created_at' => $notification->created_at->toISOString(),
+                    ];
+                });
+
+            $unreadCount = $user->unreadNotifications()->count();
+
+            Log::info('Pegawai notifications loaded', [
+                'count' => $notifications->count(),
+                'unread' => $unreadCount
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications,
+                'unread_count' => $unreadCount
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in Pegawai notifications: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'User tidak ditemukan',
+                'message' => 'Error: ' . $e->getMessage(),
                 'notifications' => [],
                 'unread_count' => 0
-            ], 401);
+            ], 500);
         }
-
-        Log::info('Loading notifications for pegawai user: ' . $user->id);
-
-        // Ambil notifikasi langsung dari user object (sama seperti Security)
-        $notifications = $user->notifications()
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(function($notification) {
-                $data = $notification->data;
-                if (is_string($data)) {
-                    $data = json_decode($data, true);
-                }
-                
-                return [
-                    'id' => $notification->id,
-                    'data' => $data ?: [],
-                    'read_at' => $notification->read_at,
-                    'created_at' => $notification->created_at->toISOString(),
-                ];
-            });
-
-        $unreadCount = $user->unreadNotifications()->count();
-
-        Log::info('Pegawai notifications loaded', [
-            'count' => $notifications->count(),
-            'unread' => $unreadCount
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'notifications' => $notifications,
-            'unread_count' => $unreadCount
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Error in Pegawai notifications: ' . $e->getMessage());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage(),
-            'notifications' => [],
-            'unread_count' => 0
-        ], 500);
     }
-}
 
     /**
      * Mark notification sebagai dibaca
