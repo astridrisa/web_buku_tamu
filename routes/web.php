@@ -15,12 +15,18 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('tamu.index');
+    return redirect()->route('tamu.tutorial');
 });
+
+Route::get('/tutorial', function () {
+    return view('pages.tamu.tutorial');
+})->name('tamu.tutorial');
 
 // Tamu registration routes - bisa diakses semua orang
 Route::get('/register', [TamuController::class, 'index'])->name('tamu.index');
 Route::post('/register', [TamuController::class, 'store'])->name('tamu.store');
+Route::get('/register/success/{id}', [TamuController::class, 'success'])->name('tamu.success');
+
 
 // Auth routes - hanya untuk guest (belum login)
 Route::middleware('guest')->group(function () {
@@ -90,6 +96,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', function() {
             return app(DashboardController::class)->pegawaiDashboard();
         })->name('dashboard');
+
+        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
+        ->name('tamu.approve');
+
         
         // Pegawai specific routes bisa ditambah disini
         Route::get('/approval', [PegawaiController::class, 'approval'])->name('approval');
@@ -99,9 +109,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/notifications/{id}/read', [PegawaiController::class, 'markNotificationRead'])->name('notifications.read');
         Route::post('/notifications/mark-all-read', [PegawaiController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
 
-            
-        Route::post('/tamu/{id}/approve', [PegawaiController::class, 'approve'])
-        ->name('tamu.approve');
 
         Route::get('/{id}', [PegawaiController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [PegawaiController::class, 'edit'])->name('edit');

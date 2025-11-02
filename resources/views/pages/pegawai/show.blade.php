@@ -191,25 +191,72 @@
                     @endif
 
                     <!-- Approved -->
-                    @if($tamu->approved_at)
-                    <div class="timeline-item">
-                        <div class="timeline-marker bg-success">
-                            <i class="mdi mdi-check-circle"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <strong>Disetujui</strong>
-                                    <p class="text-muted mb-0 small">
-                                        Oleh: {{ $tamu->approvedBy->name ?? '-' }}
-                                    </p>
+                    @if($tamu->approvals && $tamu->approvals->count() > 0)
+                        @foreach($tamu->approvals->sortBy('approved_at') as $approval)
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success">
+                                <i class="mdi mdi-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <strong>Disetujui oleh {{ $approval->pegawai->name }}</strong>
+                                        @if($loop->first)
+                                            <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">
+                                                Approval Pertama
+                                            </span>
+                                        @endif
+                                        <p class="text-muted mb-0 small">
+                                            @if($approval->catatan)
+                                                <i class="mdi mdi-note-text-outline me-1"></i>
+                                                {{ $approval->catatan }}
+                                            @else
+                                                Kunjungan disetujui
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <small class="text-muted text-nowrap ms-3">
+                                        {{ \Carbon\Carbon::parse($approval->approved_at)->format('d/m/Y H:i') }}
+                                    </small>
                                 </div>
-                                <small class="text-muted">
-                                    {{ \Carbon\Carbon::parse($tamu->approved_at)->format('d/m/Y H:i') }}
-                                </small>
                             </div>
                         </div>
-                    </div>
+                        @endforeach
+
+                        <!-- Summary jika lebih dari 1 approver -->
+                        @if($tamu->approvals->count() > 1)
+                        <div class="timeline-item">
+                            <div class="timeline-marker" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                                <i class="mdi mdi-account-multiple-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="alert alert-success mb-0 py-2">
+                                    <i class="mdi mdi-information me-2"></i>
+                                    <strong>Total {{ $tamu->approvals->count() }} pegawai</strong> telah menyetujui kunjungan ini
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @elseif($tamu->approved_at)
+                        <!-- Fallback untuk data lama (jika belum ada di tamu_approvals) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success">
+                                <i class="mdi mdi-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>Disetujui</strong>
+                                        <p class="text-muted mb-0 small">
+                                            Oleh: {{ $tamu->approvedBy->name ?? '-' }}
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ \Carbon\Carbon::parse($tamu->approved_at)->format('d/m/Y H:i') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                     @endif
 
                     <!-- Check Out -->
@@ -282,7 +329,7 @@
                         </form>
                     @endif
 
-                    @if($tamu->status == 'checkin' && auth()->user()->role_id == 2)
+                    @if(in_array($tamu->status, ['checkin', 'approved']) && auth()->user()->role_id == 2 && !$isApprovedByUser)
                         <form action="{{ route('pegawai.tamu.approve', $tamu->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-primary w-100">
@@ -290,7 +337,13 @@
                                 Setujui Kunjungan
                             </button>
                         </form>
+                    @elseif($isApprovedByUser)
+                        <div class="alert alert-success mt-3">
+                            <i class="mdi mdi-check-circle me-1"></i>
+                            Anda sudah menyetujui kunjungan ini.
+                        </div>
                     @endif
+
 
                     {{-- @if(in_array($tamu->status, ['checkin', 'approved']))
                         <form action="{{ route('security.checkout', $tamu->id) }}" method="POST">

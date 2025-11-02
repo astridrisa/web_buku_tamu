@@ -97,6 +97,9 @@ class DashboardController extends Controller
         $tamus = TamuModel::with(['jenisIdentitas', 'approvedBy', 'checkinBy', 'checkoutBy'])
                         ->orderBy('created_at', 'desc')
                         ->get();
+
+        // Total semua orang yang datang (hitung jumlah rombongan)
+        $totalPengunjung = $tamus->sum('jumlah_rombongan');
         
         // Pending approval = tamu yang sudah checkin tapi belum diverifikasi
         $pendingApproval = $tamus->where('status', 'checkin')->count();
@@ -113,9 +116,14 @@ class DashboardController extends Controller
         $approvalRate = $tamus->count() > 0 
             ? round(($totalApproved / $tamus->count()) * 100, 1)
             : 0;
+        
+        // Total tamu bulan ini
+        $tamuBulanIni = $tamus->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                            ->count();
 
         $stats = [
             'total' => $tamus->count(),
+            'total_pengunjung' => $totalPengunjung,
             'belum_checkin' => $tamus->where('status', 'belum_checkin')->count(),
             'checkin' => $tamus->where('status', 'checkin')->count(),
             'approved' => $tamus->where('status', 'approved')->count(),
@@ -123,6 +131,7 @@ class DashboardController extends Controller
             'approved_today' => $approvedToday,
             'total_approved' => $totalApproved,
             'approval_rate' => $approvalRate,
+            'tamu_bulan_ini' => $tamuBulanIni,
         ];
 
         return view('pages.pegawai.dashboard', compact('tamus', 'stats'));

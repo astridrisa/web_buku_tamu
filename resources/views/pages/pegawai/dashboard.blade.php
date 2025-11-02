@@ -65,7 +65,27 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
+        <div class="row mb-4">
+            <div class="col-md-6 col-xl-3 mb-4">
+                <div class="card stat-card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="text-primary fw-bold mb-1">{{ number_format($stats['total_pengunjung']) }}</h3>
+                                <p class="text-muted mb-0 small">Total Pengunjung</p>
+                                <small class="text-primary"><i class="mdi mdi-account-group"></i> Semua Rombongan</small>
+                            </div>
+                            <div class="icon-large text-primary">
+                                <i class="mdi mdi-account-multiple"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-primary bg-opacity-10 border-0">
+                        <small class="text-primary"><i class="mdi mdi-information"></i> Total orang yang datang berkunjung</small>
+                    </div>
+                </div>
+            </div>
+    {{-- <div class="row mb-4">
         <div class="col-md-6 col-xl-3 mb-4">
             <div class="card stat-card shadow-sm border-0 h-100">
                 <div class="card-body">
@@ -84,7 +104,7 @@
                     <small class="text-primary"><i class="mdi mdi-information"></i> Tamu menunggu persetujuan Anda</small>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <div class="col-md-6 col-xl-3 mb-4">
             <div class="card stat-card shadow-sm border-0 h-100">
@@ -131,6 +151,26 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
+                            <h3 class="text-success fw-bold mb-1">{{ $stats['tamu_bulan_ini'] }}</h3>
+                            <p class="text-muted mb-0 small">Tamu Bulan Ini</p>
+                            <small class="text-success"><i class="mdi mdi-calendar-month"></i> {{ now()->format('F Y') }}</small>
+                        </div>
+                        <div class="icon-large text-success">
+                            <i class="mdi mdi-account-group"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-success bg-opacity-10 border-0">
+                    <small class="text-success"><i class="mdi mdi-information"></i> Total registrasi bulan ini</small>
+                </div>
+            </div>
+        </div>
+
+        {{-- <div class="col-md-6 col-xl-3 mb-4">
+            <div class="card stat-card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
                             <h3 class="text-success fw-bold mb-1">{{ $stats['approval_rate'] }}%</h3>
                             <p class="text-muted mb-0 small">Approval Rate</p>
                             <small class="text-success"><i class="mdi mdi-trending-up"></i> Performance</small>
@@ -144,7 +184,7 @@
                     <small class="text-success"><i class="mdi mdi-information"></i> Tingkat persetujuan Anda</small>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Main Content Grid -->
@@ -294,10 +334,13 @@
                     <i class="mdi mdi-help-circle-outline text-primary mb-2" style="font-size: 3rem;"></i>
                     <h6 class="fw-bold mb-2">Butuh Bantuan?</h6>
                     <p class="small text-muted mb-3">Hubungi admin atau IT support jika mengalami kendala</p>
-                    <button class="btn btn-sm btn-outline-primary">
+                        <a href="https://jasatirta1.co.id/" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="mdi mdi-phone me-1"></i>Hubungi Support
+                        </a>
+                    {{-- <button class="btn btn-sm btn-outline-primary">
                         <i class="mdi mdi-phone me-1"></i>Hubungi Support
                     </button>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

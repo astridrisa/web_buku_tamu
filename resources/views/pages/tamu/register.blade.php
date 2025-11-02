@@ -650,14 +650,7 @@
     
     <script>
     $(document).ready(function() {
-        // CSRF Token setup
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        // Privacy header toggle (accordion)
+    // Privacy header toggle (accordion)
         $('#privacyHeader').on('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -708,11 +701,11 @@
             }
         });
         
+        // ✅ FORM SUBMISSION - TANPA AJAX
         $('#registrationForm').on('submit', function(e) {
-            e.preventDefault();
-
             // Validasi privacy consent
             if (!$('#privacyConsent').is(':checked')) {
+                e.preventDefault(); // Hanya prevent jika validasi gagal
                 $('#privacyAgreement').addClass('error');
                 $('#privacyError').addClass('show');
                 
@@ -726,87 +719,17 @@
             
             // Show loading state
             const submitBtn = $('.btn-submit');
-            const submitText = $('.submit-text');
-            const loadingText = $('.loading');
-            
             submitBtn.prop('disabled', true);
-            submitText.hide();
-            loadingText.show();
+            $('.submit-text').hide();
+            $('.loading').show();
             
-            // Hide previous messages
-            $('#successMessage, #errorMessage').hide();
+            // Clear previous errors
             $('.form-control, .form-select').removeClass('is-invalid');
-            $('.invalid-feedback').remove();
             $('#privacyAgreement').removeClass('error');
             $('#privacyError').removeClass('show');
             
-            // Gunakan FormData untuk mengirim file
-            var formData = new FormData(this);
-            
-            // Submit form
-            $.ajax({
-                url: $(this).attr('action'),
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        $('#successMessage').fadeIn();
-                        $('#registrationForm')[0].reset();
-                        $('#photoPreview').html('<i class="fas fa-user"></i>');
-                        $('#privacyAgreement').removeClass('checked');
-
-                        // Scroll to success message
-                        $('html, body').animate({
-                            scrollTop: $('#successMessage').offset().top - 100
-                        }, 500);
-                        
-                        // Auto reset form after 10 seconds
-                        setTimeout(function() {
-                            $('#successMessage').fadeOut();
-                        }, 10000);
-                    }
-                },
-                error: function(xhr) {
-                    let errorMessage = 'Terjadi kesalahan saat mendaftar.';
-                    
-                    if (xhr.status === 422) {
-                        const errors = xhr.responseJSON.errors;
-                        let errorHtml = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Kesalahan Validasi:</h6><ul class="mb-0">';
-                        
-                        $.each(errors, function(field, messages) {
-                            $(`#${field}`).addClass('is-invalid');
-                            
-                            messages.forEach(function(message) {
-                                errorHtml += `<li>${message}</li>`;
-                            });
-                        });
-                        
-                        errorHtml += '</ul>';
-                        errorMessage = errorHtml;
-                    }
-                    
-                    $('#errorMessage').html(errorMessage).fadeIn();
-
-                    // Scroll to error message
-                    $('html, body').animate({
-                        scrollTop: $('#errorMessage').offset().top - 100
-                    }, 500);
-                },
-                complete: function() {
-                    // Reset button state
-                    submitBtn.prop('disabled', false);
-                    loadingText.hide();
-                    submitText.show();
-                }
-            });
-        });
-        
-        // Remove error styling on input change
-        $('.form-control, .form-select').on('input change', function() {
-            $(this).removeClass('is-invalid');
-            $(this).siblings('.invalid-feedback').remove();
+            // Biarkan form submit secara normal (redirect dari controller akan bekerja)
+            // TIDAK ADA e.preventDefault() di sini!
         });
         
         // Format phone number
