@@ -279,24 +279,27 @@
                                                     Lihat Detail
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('admin.users.edit', $user->id) }}">
-                                                    <i class="mdi mdi-pencil me-2 text-warning"></i>
-                                                    Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li>
-                                                <button type="button" class=" dropdown-item text-danger btn-delete"
-                                                    data-url="{{ route('admin.users.delete', $user->id) }}"
-                                                    data-name="{{ $user->name }}"><i class="mdi mdi-delete me-2"></i>
-                                                    Hapus
-                                                </button>
 
-                                            </li>
+                                            @if($user->role_id != 1) {{-- 1 = admin --}}
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.users.edit', $user->id) }}">
+                                                        <i class="mdi mdi-pencil me-2 text-warning"></i>
+                                                        Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item text-danger btn-delete"
+                                                        data-url="{{ route('admin.users.delete', $user->id) }}"
+                                                        data-name="{{ $user->name }}">
+                                                        <i class="mdi mdi-delete me-2"></i>Hapus
+                                                    </button>
+                                                </li>
+                                            @endif
                                         </ul>
+
                                     </div>
                                 </td>
                             </tr>

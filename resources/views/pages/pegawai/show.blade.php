@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Detail Tamu')
+@section('title', 'Detail Tamu')
 @section('page-description', 'Informasi lengkap data tamu')
 
 @section('content')
@@ -395,6 +395,19 @@ function downloadQR() {
     link.click();
 }
 @endif
+
+// === KONFIRMASI SAAT SETUJUI KUNJUNGAN ===
+document.addEventListener('DOMContentLoaded', function () {
+    const approveForm = document.querySelector('form[action="{{ route('pegawai.tamu.approve', $tamu->id) }}"]');
+    if (approveForm) {
+        approveForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (confirm('Apakah Anda yakin ingin menyetujui kunjungan ini?')) {
+                approveForm.submit();
+            }
+        });
+    }
+});
 </script>
 @endpush
 

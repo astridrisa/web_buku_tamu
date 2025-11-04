@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Tambah Tamu')
 @section('page-title', 'Tambah Tamu')
 @section('page-description', 'Form pendaftaran tamu baru')
 

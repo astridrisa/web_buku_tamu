@@ -7,7 +7,7 @@
   <title>@yield('title', 'Dashboard')</title>
 
   <head>
-      <title>@yield('title') &mdash; PJT</title>
+      {{-- <title>@yield('title') &mdash; PJT</title> --}}
       <link rel="icon" type="image/png" href="{{ url('img/logopjt2.png') }}">
   </head>
 

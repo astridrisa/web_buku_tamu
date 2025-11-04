@@ -50,7 +50,7 @@ class SecurityController extends Controller
         ];
 
         // 🔔 Ambil notifikasi untuk security
-        $notifications = $this->notificationService->getUserNotifications(Auth::user());
+        // $notifications = $this->notificationService->getUserNotifications(Auth::user());
 
         return view('pages.security.list', compact('tamus', 'stats'));
     }
@@ -351,4 +351,94 @@ class SecurityController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+        /**
+     * ✅ Approve tamu yang sudah checkin
+     */
+    public function approve($id)
+    {
+        try {
+            // Cek apakah tamu ada
+            $tamu = TamuModel::with('approvals')->find($id);
+            
+            if (!$tamu) {
+                return redirect()
+                    ->route('security.list')
+                    ->with('error', 'Data tamu tidak ditemukan');
+            }
+
+            $userId = auth()->user()->id;
+
+            // Cek apakah pegawai ini sudah pernah approve
+            if (method_exists($tamu, 'isApprovedBy') && $tamu->isApprovedBy($userId)) {
+                return redirect()
+                    ->route('security.list')
+                    ->with('warning', "Anda sudah menyetujui kunjungan tamu {$tamu->nama} sebelumnya.");
+            }
+
+            // Cek status tamu - harus sudah checkin atau approved
+            if (!in_array($tamu->status, ['checkin', 'approved'])) {
+                return redirect()
+                    ->route('security.list')
+                    ->with('error', 'Tamu harus sudah checkin untuk bisa disetujui.');
+            }
+
+            // Tambahkan approval baru ke tabel tamu_approvals
+            \App\Models\TamuApprovalModel::create([
+                'tamu_id' => $tamu->id,
+                'pegawai_id' => $userId,
+                'approved_at' => now(),
+                'catatan' => request('catatan') // opsional dari form
+            ]);
+
+            // Update status tamu menjadi 'approved' HANYA jika ini approval pertama
+            if ($tamu->status !== 'approved') {
+                $tamu->update([
+                    'status' => 'approved',
+                    'approved_by' => $userId, // first approver
+                    'approved_at' => now(),
+                ]);
+            }
+
+            // Reload untuk mendapatkan data terbaru
+            $tamu->load('approvals.pegawai');
+
+            // Log approval
+            Log::info('Tamu approved', [
+                'tamu_id' => $tamu->id,
+                'tamu_nama' => $tamu->nama,
+                'pegawai_id' => $userId,
+                'pegawai_name' => auth()->user()->name,
+                'total_approvers' => $tamu->approvals->count(),
+                'is_first_approval' => $tamu->approvals->count() == 1
+            ]);
+
+            // Kirim notifikasi ke security
+            $this->notificationService->notifySecurityApproved($tamu);
+
+            // Pesan sukses
+            $totalApprovers = $tamu->approvals->count();
+            $message = "Kunjungan tamu {$tamu->nama} telah Anda setujui.";
+            
+            if ($totalApprovers > 1) {
+                $message .= " (Total {$totalApprovers} pegawai telah menyetujui)";
+            }
+
+            return redirect()
+                ->route('security.list')
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Approve Error: ' . $e->getMessage(), [
+                'tamu_id' => $id,
+                'user_id' => auth()->user()->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()
+                ->route('security.list')
+                ->with('error', 'Terjadi kesalahan saat menyetujui tamu: ' . $e->getMessage());
+        }
+    }
+
 }

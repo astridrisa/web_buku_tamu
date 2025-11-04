@@ -119,7 +119,7 @@ Route::middleware('auth')->group(function () {
        
     });
 
-    // =================== SECURITY ROUTES (role_id = 3) ===================
+// =================== SECURITY ROUTES (role_id = 3) ===================
     Route::middleware('auth')->prefix('security')->name('security.')->group(function () {
         Route::get('/', [SecurityController::class, 'index'])->name('index');
         Route::get('/list', [SecurityController::class, 'list'])->name('list');
@@ -137,6 +137,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [SecurityController::class, 'update'])->name('update');
         Route::delete('/{id}', [SecurityController::class, 'delete'])->name('delete');
         Route::post('/{id}/checkin', [SecurityController::class, 'checkin'])->name('checkin');
+        Route::post('/{id}/approve', [SecurityController::class, 'approve'])->name('approve');
         Route::post('/{id}/checkout', [SecurityController::class, 'checkout'])->name('checkout');
     });
 
