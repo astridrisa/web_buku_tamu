@@ -473,11 +473,11 @@
 </head>
 <body>
     <!-- Login Buttons -->
-    <div class="login-buttons">
+    {{-- <div class="login-buttons">
         <a href="{{ route('login') }}"class="btn-login security" onclick="loginSatpam()">
             <i class="fas fa-user-tie me-1"></i>Login
         </a>
-    </div>
+    </div> --}}
 
     <div class="registration-container">
         <div class="registration-card">
