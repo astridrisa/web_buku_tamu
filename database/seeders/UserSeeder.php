@@ -18,16 +18,18 @@ class UserSeeder extends Seeder
         // Satpam
         UserModel::create([
             'name' => 'satpam1',
+            'kopeg' => 'SP001',
             'email' => 'satpam1@gmail.com',
             'password' => Hash::make('12345'),
-            'role_id' => 2,
+            'role_id' => 3,
         ]);
 
         UserModel::create([
             'name' => 'satpam2',
+            'kopeg' => 'SP002',
             'email' => 'satpam2@gmail.com',
             'password' => Hash::make('12345'),
-            'role_id' => 2,
+            'role_id' => 3,
         ]);
 
         // Admin
